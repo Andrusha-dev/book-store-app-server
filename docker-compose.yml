@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bookstore_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: andrushastus
+      POSTGRES_PASSWORD: gaguga
+      POSTGRES_DB: book_store_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
