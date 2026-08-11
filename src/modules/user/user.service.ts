@@ -8,6 +8,8 @@ import * as bcrypt from "bcrypt"
 import type { IdentityProvider } from '../../generated/prisma/enums';
 import { Prisma } from '../../generated/prisma/client';
 import { Logger } from 'nestjs-pino';
+import { plainToInstance } from 'class-transformer';
+import { UserMapper } from './user.mapper';
 
 
 @Injectable()
@@ -17,23 +19,34 @@ export class UserService {
     private readonly logger: Logger
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<UserResponseDto>  {
-    const passwordHash = await bcrypt.hash(createUserDto.password, 10);
+  async create(dto: CreateUserDto): Promise<UserResponseDto>  {
+    const {password, ...restData} = dto;
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    const data: Prisma.UserCreateInput = CreateUserDto.toCreateInput(createUserDto, passwordHash);
-    const userEntity: UserEntity = await this.prismaService.user.create({
+    const data: Prisma.UserCreateInput = {
+      ...restData,
+      passwordHash: passwordHash
+    }
+
+    const user: UserEntity = await this.prismaService.user.create({
       data: data,
       include: userInclude
     });
     this.logger.log("User created");
 
-    const responseDto: UserResponseDto = UserResponseDto.fromEntity(userEntity);
+    const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
 
     return responseDto;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(): Promise<UserResponseDto[]> {
+    const users: UserEntity[] = await this.prismaService.user.findMany({
+      include: userInclude
+    });
+
+    const responseDto: UserResponseDto[] = users.map(user => UserMapper.toResponseDto(user));
+
+    return responseDto
   }
 
   findOne(id: number) {
@@ -57,7 +70,7 @@ export class UserService {
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) return null;
 
-    const responseDto = UserResponseDto.fromEntity(user);
+    const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
     return responseDto;
   }
 
@@ -77,7 +90,7 @@ export class UserService {
     //Якщо користувача не знайдено
     if (!user) {
       //Первіряємо чи існує користувач з переданим email
-      const existingUser = await this.findByEmail(email);
+      const existingUser: UserEntity | null = await this.findByEmail(email);
 
       if (existingUser) {
         // Оновлюємо існуючого користувача: додаємо нову identity
@@ -107,7 +120,7 @@ export class UserService {
       }
     }
 
-    const responseDto: UserResponseDto = UserResponseDto.fromEntity(user);
+    const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
     return responseDto;
   }
 

@@ -46,17 +46,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       this.logger.error({err: error as Error}, 'Database connection failed');
       throw error;
     }
-
   }
 
   async onModuleDestroy(): Promise<void> {
-    try {
-      await this.$disconnect();
-      //Обов'язково очищуємо пул з'єднань в бд, щоб вони не накопичувались
-      await this.pool.end();
-      this.logger.log('Database disconnected');
-    } catch (error) {
-      this.logger.error({err: error as Error}, 'Database disconnection failed');
-    }
+    await this.$disconnect();
+    //Обов'язково очищуємо пул з'єднань в бд, щоб вони не накопичувались
+    await this.pool.end();
   }
 }

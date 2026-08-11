@@ -64,7 +64,6 @@ export class CreateUserDto {
       phone: dto.phone,
       birthYear: dto.birthYear,
       isMarried: dto.isMarried,
-      role: "ADMIN"
     }
 
     return data;
