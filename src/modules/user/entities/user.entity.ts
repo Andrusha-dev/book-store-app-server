@@ -1,4 +1,4 @@
-import { Prisma } from '../../../generated/prisma/client';
+import { type Identity, Prisma } from '../../../generated/prisma/client';
 
 
 
@@ -7,3 +7,6 @@ export const userInclude = {
 } satisfies Prisma.UserInclude;
 
 export type UserEntity = Prisma.UserGetPayload<{include: typeof userInclude}>;
+
+//IdentityEntity не містить реляцій
+export type IdentityEntity = Identity;

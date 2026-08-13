@@ -1,6 +1,5 @@
-import type { UserEntity } from './entities/user.entity';
+import type { IdentityEntity, UserEntity } from './entities/user.entity';
 import type { UserResponseDto } from './dto/user-response.dto';
-import type { IdentityEntity } from '../identity/entities/identity.entity';
 import type { IdentityResponseDto } from './dto/identity-response.dto';
 
 export class UserMapper {

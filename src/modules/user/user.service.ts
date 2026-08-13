@@ -1,4 +1,4 @@
-import { Injectable} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { type UserEntity, userInclude} from './entities/user.entity';
@@ -49,12 +49,33 @@ export class UserService {
     return responseDto
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string): Promise<UserResponseDto> {
+    const user: UserEntity | null = await this.prismaService.user.findUnique({
+      where: { id },
+      include: userInclude
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Користувача з id ${id} не знайдено`);
+    }
+
+    const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
+
+    return responseDto;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
+    const data: Prisma.UserUpdateInput = { ...dto }
+
+    const updatedUser: UserEntity = await this.prismaService.user.update({
+      where: {id},
+      data,
+      include: userInclude
+    });
+
+    const responseDto: UserResponseDto = UserMapper.toResponseDto(updatedUser);
+
+    return responseDto;
   }
 
   remove(id: number) {
