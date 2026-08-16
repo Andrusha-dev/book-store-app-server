@@ -1,8 +1,56 @@
-import type { IdentityEntity, UserEntity } from './entities/user.entity';
-import type { UserResponseDto } from './dto/user-response.dto';
-import type { IdentityResponseDto } from './dto/identity-response.dto';
+import {
+  type IdentityEntity,
+  type UserEntity,
+} from './entities/user.entity';
+import {
+  IdentityResponseDto,
+  type UserResponseDto,
+} from './dto/user-response.dto';
+import type { CreateUserDto } from './dto/create-user.dto';
+import { Prisma } from '../../generated/prisma/client';
+import type { UsersQueryDto } from './dto/users-query.dto';
+
 
 export class UserMapper {
+  static toCreateInput(
+    dto: CreateUserDto,
+    passwordHash: string,
+  ): Prisma.UserCreateInput {
+    const { password, ...restData } = dto;
+
+    const data: Prisma.UserCreateInput = {
+      ...restData,
+      passwordHash,
+    };
+
+    return data;
+  }
+
+  static toWhereInput(filters: Omit<UsersQueryDto, "sortBy" | "sortOrder" | "pageNo" | "pageSize">): Prisma.UserWhereInput {
+    const where: Prisma.UserWhereInput = {
+      role: filters.role ? filters.role : undefined,
+    };
+
+    if(filters.search) {
+      where.OR = [
+        {
+          username: { contains: filters.search, mode: 'insensitive' },
+        },
+        {
+          firstname: { contains: filters.search, mode: 'insensitive' },
+        },
+        {
+          lastname: { contains: filters.search, mode: 'insensitive' },
+        },
+        {
+          email: { contains: filters.search, mode: 'insensitive' },
+        },
+      ];
+    }
+
+    return where;
+  }
+
   static toResponseDto(user: UserEntity): UserResponseDto {
     const responseDto: UserResponseDto = {
       id: user.id,
@@ -17,15 +65,17 @@ export class UserMapper {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       identities: user.identities.map((identityEntity) =>
-        IdentityMapper.toResponseDto(identityEntity))
+        UserMapper.toIdentityResponseDto(identityEntity),
+      ),
     };
 
     return responseDto;
   }
-}
 
-class IdentityMapper {
-  static toResponseDto(identity: IdentityEntity): IdentityResponseDto {
+  //Приватний метод для мапінга до IdentityResponseDto
+  private static toIdentityResponseDto(
+    identity: IdentityEntity,
+  ): IdentityResponseDto {
     const responseDto: IdentityResponseDto = {
       id: identity.id,
       provider: identity.provider,

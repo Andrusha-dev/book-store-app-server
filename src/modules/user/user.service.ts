@@ -8,8 +8,10 @@ import * as bcrypt from "bcrypt"
 import type { IdentityProvider } from '../../generated/prisma/enums';
 import { Prisma } from '../../generated/prisma/client';
 import { Logger } from 'nestjs-pino';
-import { plainToInstance } from 'class-transformer';
 import { UserMapper } from './user.mapper';
+import type { UsersQueryDto } from './dto/users-query.dto';
+import { UsersResponseDto } from './dto/users-response.dto';
+import { PageMetaDto } from '../../common/dto/page-response.dto';
 
 
 @Injectable()
@@ -20,16 +22,12 @@ export class UserService {
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserResponseDto>  {
-    const {password, ...restData} = dto;
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash: string = await bcrypt.hash(dto.password, 10);
 
-    const data: Prisma.UserCreateInput = {
-      ...restData,
-      passwordHash: passwordHash
-    }
+    const data: Prisma.UserCreateInput = UserMapper.toCreateInput(dto, passwordHash);
 
     const user: UserEntity = await this.prismaService.user.create({
-      data: data,
+      data,
       include: userInclude
     });
     this.logger.log("User created");
@@ -39,12 +37,28 @@ export class UserService {
     return responseDto;
   }
 
-  async findAll(): Promise<UserResponseDto[]> {
-    const users: UserEntity[] = await this.prismaService.user.findMany({
-      include: userInclude
-    });
+  async findMany(queryDto: UsersQueryDto): Promise<UsersResponseDto> {
+    const {sortBy, sortOrder, pageNo, pageSize, ...filters} = queryDto;
 
-    const responseDto: UserResponseDto[] = users.map(user => UserMapper.toResponseDto(user));
+    const where: Prisma.UserWhereInput = UserMapper.toWhereInput(filters);
+
+    const [userEntities, totalElements] = await Promise.all([
+      this.prismaService.user.findMany({
+        where: where,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        take: pageSize,
+        skip: pageNo * pageSize,
+        include: userInclude,
+      }),
+      this.prismaService.user.count({ where }),
+    ]);
+
+    const data: UserResponseDto[] = userEntities.map(user => UserMapper.toResponseDto(user))
+    const meta: PageMetaDto = new PageMetaDto(pageNo, pageSize, totalElements);
+
+    const responseDto: UsersResponseDto = new UsersResponseDto(data, meta);
 
     return responseDto
   }
@@ -76,10 +90,6 @@ export class UserService {
     const responseDto: UserResponseDto = UserMapper.toResponseDto(updatedUser);
 
     return responseDto;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 
   async verifyCredentials(email: string, password: string): Promise<UserResponseDto | null> {

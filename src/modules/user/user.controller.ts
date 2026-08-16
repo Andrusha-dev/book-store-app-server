@@ -5,9 +5,8 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseInterceptors,
-  ClassSerializerInterceptor,
+  ClassSerializerInterceptor, Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -18,9 +17,9 @@ import { ApiOkResponse } from '@nestjs/swagger';
 import { Auth } from '../../common/decorators/auth.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { ITokenPayload } from '../../common/types/token-payload.interface';
-import { use } from 'passport';
-import type { UserEntity } from './entities/user.entity';
-import { UserMapper } from './user.mapper';
+import { UsersResponseDto } from './dto/users-response.dto';
+import { UsersQueryDto } from './dto/users-query.dto';
+
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor) //обовязково вказуємо якщо
@@ -30,32 +29,37 @@ export class UserController {
   @Post()
   @ApiOkResponse({ type: UserResponseDto })
   @ApiErrorResponse()
-  async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const responseDto: UserResponseDto = await this.usersService.create(createUserDto);
+  async create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
+    const responseDto: UserResponseDto = await this.usersService.create(dto);
     return responseDto;
   }
 
   @Get()
-  @Auth("ADMIN")
-  @ApiOkResponse({type: [UserResponseDto]})
+  @Auth('ADMIN')
+  @ApiOkResponse({ type: UsersResponseDto })
   @ApiErrorResponse()
-  async findAll(): Promise<UserResponseDto[]> {
-    const responseDto: UserResponseDto[] =  await this.usersService.findAll();
+  async findMany(
+    @Query() queryDto: UsersQueryDto
+  ): Promise<UsersResponseDto> {
+    const responseDto: UsersResponseDto =
+      await this.usersService.findMany(queryDto);
     return responseDto;
   }
 
   @Get('me')
   @Auth()
-  @ApiOkResponse({type: UserResponseDto})
+  @ApiOkResponse({ type: UserResponseDto })
   @ApiErrorResponse()
   async findMe(@CurrentUser() user: ITokenPayload): Promise<UserResponseDto> {
-    const responseDto: UserResponseDto = await this.usersService.findOne(user.id);
+    const responseDto: UserResponseDto = await this.usersService.findOne(
+      user.id,
+    );
     return responseDto;
   }
 
   @Get(':id')
-  @Auth("ADMIN")
-  @ApiOkResponse({type: UserResponseDto})
+  @Auth('ADMIN')
+  @ApiOkResponse({ type: UserResponseDto })
   @ApiErrorResponse()
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
     const responseDto: UserResponseDto = await this.usersService.findOne(id);
@@ -66,14 +70,12 @@ export class UserController {
   @Auth()
   async update(
     @CurrentUser() user: ITokenPayload,
-    @Body() updateUserDto: UpdateUserDto
+    @Body() dto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    const responseDto: UserResponseDto = await this.usersService.update(user.id, updateUserDto);
-    return responseDto
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    const responseDto: UserResponseDto = await this.usersService.update(
+      user.id,
+      dto,
+    );
+    return responseDto;
   }
 }

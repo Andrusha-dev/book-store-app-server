@@ -7,7 +7,9 @@ export class AppValidationPipe extends ValidationPipe {
     super({
       whitelist: true,
       transform: true,
-      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true, //КРИТИЧНО ВАЖЛИВО: змушує NestJS створювати екземпляр dto і застосовувати значення за змовчуванням для полів dto
+      },
     });
   }
 }

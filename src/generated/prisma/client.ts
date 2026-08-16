@@ -49,3 +49,23 @@ export type User = Prisma.UserModel
  * 
  */
 export type Identity = Prisma.IdentityModel
+/**
+ * Model Product
+ * 
+ */
+export type Product = Prisma.ProductModel
+/**
+ * Model Category
+ * 
+ */
+export type Category = Prisma.CategoryModel
+/**
+ * Model Author
+ * 
+ */
+export type Author = Prisma.AuthorModel
+/**
+ * Model Publisher
+ * 
+ */
+export type Publisher = Prisma.PublisherModel

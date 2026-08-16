@@ -11,13 +11,13 @@ import { PrismaExceptionsFilter } from './common/filters/prisma-exceptions.filte
 import { UserModule } from './modules/user/user.module';
 import { HttpExceptionsFilter } from './common/filters/http-exceptions.filter';
 import { AuthModule } from './modules/auth/auth.module';
-import { IdentityModule } from './modules/identity/identity.module';
+import { ProductModule } from './modules/product/product.module';
 
 
 
 
 @Module({
-  imports: [CoreModule, UserModule, AuthModule, IdentityModule],
+  imports: [CoreModule, UserModule, AuthModule, ProductModule],
   controllers: [AppController],
   providers: [
     AppService,
@@ -36,7 +36,7 @@ import { IdentityModule } from './modules/identity/identity.module';
     {
       provide: APP_FILTER,
       useClass: PrismaExceptionsFilter,
-    }
+    },
   ],
 })
 export class AppModule {}

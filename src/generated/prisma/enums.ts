@@ -23,3 +23,20 @@ export const IdentityProvider = {
 } as const
 
 export type IdentityProvider = (typeof IdentityProvider)[keyof typeof IdentityProvider]
+
+
+export const CoverType = {
+  HARD: 'HARD',
+  SOFT: 'SOFT'
+} as const
+
+export type CoverType = (typeof CoverType)[keyof typeof CoverType]
+
+
+export const ProductStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus]

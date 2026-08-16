@@ -20,8 +20,8 @@ enum UserRole {
 
 model User {
   id           String   @id @default(uuid(7))
-  email        String   @unique //Потрібен і для LOCAL і для OAuth, тому обовязкове
-  passwordHash String? //Потрібен лише для LOCAL (для OAuth має значення null)
+  email        String   @unique // Потрібен і для LOCAL і для OAuth, тому обовязкове
+  passwordHash String? // Потрібен лише для LOCAL (для OAuth має значення null)
   username     String?  @unique
   firstname    String?
   lastname     String?
@@ -35,17 +35,17 @@ model User {
   identities Identity[]
 }
 
-//Перелік провайдерів для автентифікації
+// Перелік провайдерів для автентифікації
 enum IdentityProvider {
   GOOGLE
   GITHUB
 }
 
-//Модель автентифікації
+// Модель автентифікації
 model Identity {
   id         String           @id @default(uuid(7))
   provider   IdentityProvider
-  providerId String //це унікальний ідентифікатор користувача в сервісі OAuth.
+  providerId String // це унікальний ідентифікатор користувача в сервісі OAuth.
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
 
@@ -54,4 +54,70 @@ model Identity {
 
   // Унікальний індекс, щоб один аккаунт соцмережі не прив'язали двічі
   @@unique([provider, providerId])
+}
+
+enum CoverType {
+  HARD
+  SOFT
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Product {
+  id          String        @id @default(uuid(7))
+  name        String
+  imgUrls     String[]      @default([])
+  price       Decimal       @db.Decimal(10, 2)
+  description String?       @db.Text
+  quantity    Int           @default(0)
+  status      ProductStatus @default(DRAFT)
+  widthMm     Int?
+  heightMm    Int?
+  depthMm     Int?
+  weightGrams Int?
+  isbn        String        @unique
+  pages       Int
+  coverType   CoverType
+  language    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  categories  Category[]
+  authorId    String
+  author      Author     @relation(fields: [authorId], references: [id])
+  publisherId String
+  publisher   Publisher  @relation(fields: [publisherId], references: [id])
+}
+
+model Category {
+  id        String   @id @default(uuid(7))
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Author {
+  id          String   @id @default(uuid(7))
+  name        String   @unique
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+}
+
+model Publisher {
+  id        String   @id @default(uuid(7))
+  name      String   @unique
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
 }
