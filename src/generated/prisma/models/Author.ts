@@ -27,6 +27,7 @@ export type AggregateAuthor = {
 export type AuthorMinAggregateOutputType = {
   id: string | null
   name: string | null
+  imgUrl: string | null
   description: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -35,6 +36,7 @@ export type AuthorMinAggregateOutputType = {
 export type AuthorMaxAggregateOutputType = {
   id: string | null
   name: string | null
+  imgUrl: string | null
   description: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -43,6 +45,7 @@ export type AuthorMaxAggregateOutputType = {
 export type AuthorCountAggregateOutputType = {
   id: number
   name: number
+  imgUrl: number
   description: number
   createdAt: number
   updatedAt: number
@@ -53,6 +56,7 @@ export type AuthorCountAggregateOutputType = {
 export type AuthorMinAggregateInputType = {
   id?: true
   name?: true
+  imgUrl?: true
   description?: true
   createdAt?: true
   updatedAt?: true
@@ -61,6 +65,7 @@ export type AuthorMinAggregateInputType = {
 export type AuthorMaxAggregateInputType = {
   id?: true
   name?: true
+  imgUrl?: true
   description?: true
   createdAt?: true
   updatedAt?: true
@@ -69,6 +74,7 @@ export type AuthorMaxAggregateInputType = {
 export type AuthorCountAggregateInputType = {
   id?: true
   name?: true
+  imgUrl?: true
   description?: true
   createdAt?: true
   updatedAt?: true
@@ -150,6 +156,7 @@ export type AuthorGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 export type AuthorGroupByOutputType = {
   id: string
   name: string
+  imgUrl: string
   description: string | null
   createdAt: Date
   updatedAt: Date
@@ -179,6 +186,7 @@ export type AuthorWhereInput = {
   NOT?: Prisma.AuthorWhereInput | Prisma.AuthorWhereInput[]
   id?: Prisma.StringFilter<"Author"> | string
   name?: Prisma.StringFilter<"Author"> | string
+  imgUrl?: Prisma.StringFilter<"Author"> | string
   description?: Prisma.StringNullableFilter<"Author"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Author"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Author"> | Date | string
@@ -188,6 +196,7 @@ export type AuthorWhereInput = {
 export type AuthorOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  imgUrl?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -200,6 +209,7 @@ export type AuthorWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.AuthorWhereInput | Prisma.AuthorWhereInput[]
   OR?: Prisma.AuthorWhereInput[]
   NOT?: Prisma.AuthorWhereInput | Prisma.AuthorWhereInput[]
+  imgUrl?: Prisma.StringFilter<"Author"> | string
   description?: Prisma.StringNullableFilter<"Author"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Author"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Author"> | Date | string
@@ -209,6 +219,7 @@ export type AuthorWhereUniqueInput = Prisma.AtLeast<{
 export type AuthorOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  imgUrl?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -223,6 +234,7 @@ export type AuthorScalarWhereWithAggregatesInput = {
   NOT?: Prisma.AuthorScalarWhereWithAggregatesInput | Prisma.AuthorScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Author"> | string
   name?: Prisma.StringWithAggregatesFilter<"Author"> | string
+  imgUrl?: Prisma.StringWithAggregatesFilter<"Author"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Author"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Author"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Author"> | Date | string
@@ -231,6 +243,7 @@ export type AuthorScalarWhereWithAggregatesInput = {
 export type AuthorCreateInput = {
   id?: string
   name: string
+  imgUrl: string
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -240,6 +253,7 @@ export type AuthorCreateInput = {
 export type AuthorUncheckedCreateInput = {
   id?: string
   name: string
+  imgUrl: string
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -249,6 +263,7 @@ export type AuthorUncheckedCreateInput = {
 export type AuthorUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  imgUrl?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -258,6 +273,7 @@ export type AuthorUpdateInput = {
 export type AuthorUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  imgUrl?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -267,6 +283,7 @@ export type AuthorUncheckedUpdateInput = {
 export type AuthorCreateManyInput = {
   id?: string
   name: string
+  imgUrl: string
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -275,6 +292,7 @@ export type AuthorCreateManyInput = {
 export type AuthorUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  imgUrl?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -283,6 +301,7 @@ export type AuthorUpdateManyMutationInput = {
 export type AuthorUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  imgUrl?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -296,6 +315,7 @@ export type AuthorScalarRelationFilter = {
 export type AuthorCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  imgUrl?: Prisma.SortOrder
   description?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -304,6 +324,7 @@ export type AuthorCountOrderByAggregateInput = {
 export type AuthorMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  imgUrl?: Prisma.SortOrder
   description?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -312,6 +333,7 @@ export type AuthorMaxOrderByAggregateInput = {
 export type AuthorMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  imgUrl?: Prisma.SortOrder
   description?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -334,6 +356,7 @@ export type AuthorUpdateOneRequiredWithoutProductsNestedInput = {
 export type AuthorCreateWithoutProductsInput = {
   id?: string
   name: string
+  imgUrl: string
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -342,6 +365,7 @@ export type AuthorCreateWithoutProductsInput = {
 export type AuthorUncheckedCreateWithoutProductsInput = {
   id?: string
   name: string
+  imgUrl: string
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -366,6 +390,7 @@ export type AuthorUpdateToOneWithWhereWithoutProductsInput = {
 export type AuthorUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  imgUrl?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -374,6 +399,7 @@ export type AuthorUpdateWithoutProductsInput = {
 export type AuthorUncheckedUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  imgUrl?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -413,6 +439,7 @@ export type AuthorCountOutputTypeCountProductsArgs<ExtArgs extends runtime.Types
 export type AuthorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  imgUrl?: boolean
   description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -423,6 +450,7 @@ export type AuthorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type AuthorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  imgUrl?: boolean
   description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -431,6 +459,7 @@ export type AuthorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type AuthorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  imgUrl?: boolean
   description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -439,12 +468,13 @@ export type AuthorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type AuthorSelectScalar = {
   id?: boolean
   name?: boolean
+  imgUrl?: boolean
   description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AuthorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["author"]>
+export type AuthorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "imgUrl" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["author"]>
 export type AuthorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   products?: boolean | Prisma.Author$productsArgs<ExtArgs>
   _count?: boolean | Prisma.AuthorCountOutputTypeDefaultArgs<ExtArgs>
@@ -460,6 +490,7 @@ export type $AuthorPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
+    imgUrl: string
     description: string | null
     createdAt: Date
     updatedAt: Date
@@ -889,6 +920,7 @@ export interface Prisma__AuthorClient<T, Null = never, ExtArgs extends runtime.T
 export interface AuthorFieldRefs {
   readonly id: Prisma.FieldRef<"Author", 'String'>
   readonly name: Prisma.FieldRef<"Author", 'String'>
+  readonly imgUrl: Prisma.FieldRef<"Author", 'String'>
   readonly description: Prisma.FieldRef<"Author", 'String'>
   readonly createdAt: Prisma.FieldRef<"Author", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Author", 'DateTime'>

@@ -12,12 +12,15 @@ import { UserModule } from './modules/user/user.module';
 import { HttpExceptionsFilter } from './common/filters/http-exceptions.filter';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProductModule } from './modules/product/product.module';
+import { CategoryModule } from './modules/category/category.module';
+import { AuthorModule } from './modules/author/author.module';
+import { PublisherModule } from './modules/publisher/publisher.module';
 
 
 
 
 @Module({
-  imports: [CoreModule, UserModule, AuthModule, ProductModule],
+  imports: [CoreModule, UserModule, AuthModule, ProductModule, CategoryModule, AuthorModule, PublisherModule],
   controllers: [AppController],
   providers: [
     AppService,

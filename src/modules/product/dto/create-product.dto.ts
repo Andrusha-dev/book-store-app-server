@@ -4,7 +4,6 @@ import {
   IsEnum,
   IsInt,
   IsISBN,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -21,8 +20,7 @@ export class CreateProductDto {
 
   @IsArray({ message: 'Поле має бути масивом' })
   @IsUrl({}, { each: true, message: 'елементи масиву мають бути URL' })
-  @IsOptional()
-  imgUrls?: string[];
+  imgUrls: string[];
 
   @IsNumber(
     { maxDecimalPlaces: 2 },
@@ -39,28 +37,23 @@ export class CreateProductDto {
 
   @IsInt({ message: 'Поле має бути цілим числом' })
   @Min(0, {message: "Поле не може бути менше 0"})
-  @IsOptional()
-  quantity?: number;
+  quantity: number;
 
   @IsInt({ message: 'Поле має бути цілим числом' })
   @Min(0, { message: 'Поле не може бути менше 0' })
-  @IsOptional()
-  widthMm?: number;
+  widthMm: number;
 
   @IsInt({ message: 'Поле має бути цілим числом' })
   @Min(0, { message: 'Поле не може бути менше 0' })
-  @IsOptional()
-  heightMm?: number;
+  heightMm: number;
 
   @IsInt({ message: 'Поле має бути цілим числом' })
   @Min(0, { message: 'Поле не може бути менше 0' })
-  @IsOptional()
-  depthMm?: number;
+  depthMm: number;
 
   @IsInt({ message: 'Поле має бути цілим числом' })
   @Min(0, { message: 'Поле не може бути менше 0' })
-  @IsOptional()
-  weightGrams?: number;
+  weightGrams: number;
 
   @IsISBN(undefined, { message: 'Некоректний формат ISBN' })
   isbn: string;
@@ -76,10 +69,10 @@ export class CreateProductDto {
   @MinLength(2, {message: "Поле має містити щонайменше два символи"})
   language: string;
 
-  @IsOptional()
   @IsArray({ message: 'categoryIds має бути масивом' })
   @IsUUID('all', { each: true, message: 'Кожен ID категорії має бути UUID' })
-  categoryIds?: string[];
+  @IsOptional()
+  categoryIds: string[];
 
   @IsUUID('all', { message: 'Поле має бути коректним UUID' })
   authorId: string;

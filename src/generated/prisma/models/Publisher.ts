@@ -150,7 +150,7 @@ export type PublisherGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 export type PublisherGroupByOutputType = {
   id: string
   name: string
-  logoUrl: string | null
+  logoUrl: string
   createdAt: Date
   updatedAt: Date
   _count: PublisherCountAggregateOutputType | null
@@ -179,7 +179,7 @@ export type PublisherWhereInput = {
   NOT?: Prisma.PublisherWhereInput | Prisma.PublisherWhereInput[]
   id?: Prisma.StringFilter<"Publisher"> | string
   name?: Prisma.StringFilter<"Publisher"> | string
-  logoUrl?: Prisma.StringNullableFilter<"Publisher"> | string | null
+  logoUrl?: Prisma.StringFilter<"Publisher"> | string
   createdAt?: Prisma.DateTimeFilter<"Publisher"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Publisher"> | Date | string
   products?: Prisma.ProductListRelationFilter
@@ -188,7 +188,7 @@ export type PublisherWhereInput = {
 export type PublisherOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  logoUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   products?: Prisma.ProductOrderByRelationAggregateInput
@@ -200,7 +200,7 @@ export type PublisherWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.PublisherWhereInput | Prisma.PublisherWhereInput[]
   OR?: Prisma.PublisherWhereInput[]
   NOT?: Prisma.PublisherWhereInput | Prisma.PublisherWhereInput[]
-  logoUrl?: Prisma.StringNullableFilter<"Publisher"> | string | null
+  logoUrl?: Prisma.StringFilter<"Publisher"> | string
   createdAt?: Prisma.DateTimeFilter<"Publisher"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Publisher"> | Date | string
   products?: Prisma.ProductListRelationFilter
@@ -209,7 +209,7 @@ export type PublisherWhereUniqueInput = Prisma.AtLeast<{
 export type PublisherOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  logoUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.PublisherCountOrderByAggregateInput
@@ -223,7 +223,7 @@ export type PublisherScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PublisherScalarWhereWithAggregatesInput | Prisma.PublisherScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Publisher"> | string
   name?: Prisma.StringWithAggregatesFilter<"Publisher"> | string
-  logoUrl?: Prisma.StringNullableWithAggregatesFilter<"Publisher"> | string | null
+  logoUrl?: Prisma.StringWithAggregatesFilter<"Publisher"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Publisher"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Publisher"> | Date | string
 }
@@ -231,7 +231,7 @@ export type PublisherScalarWhereWithAggregatesInput = {
 export type PublisherCreateInput = {
   id?: string
   name: string
-  logoUrl?: string | null
+  logoUrl: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.ProductCreateNestedManyWithoutPublisherInput
@@ -240,7 +240,7 @@ export type PublisherCreateInput = {
 export type PublisherUncheckedCreateInput = {
   id?: string
   name: string
-  logoUrl?: string | null
+  logoUrl: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutPublisherInput
@@ -249,7 +249,7 @@ export type PublisherUncheckedCreateInput = {
 export type PublisherUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductUpdateManyWithoutPublisherNestedInput
@@ -258,7 +258,7 @@ export type PublisherUpdateInput = {
 export type PublisherUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductUncheckedUpdateManyWithoutPublisherNestedInput
@@ -267,7 +267,7 @@ export type PublisherUncheckedUpdateInput = {
 export type PublisherCreateManyInput = {
   id?: string
   name: string
-  logoUrl?: string | null
+  logoUrl: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -275,7 +275,7 @@ export type PublisherCreateManyInput = {
 export type PublisherUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -283,7 +283,7 @@ export type PublisherUpdateManyMutationInput = {
 export type PublisherUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -334,7 +334,7 @@ export type PublisherUpdateOneRequiredWithoutProductsNestedInput = {
 export type PublisherCreateWithoutProductsInput = {
   id?: string
   name: string
-  logoUrl?: string | null
+  logoUrl: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -342,7 +342,7 @@ export type PublisherCreateWithoutProductsInput = {
 export type PublisherUncheckedCreateWithoutProductsInput = {
   id?: string
   name: string
-  logoUrl?: string | null
+  logoUrl: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -366,7 +366,7 @@ export type PublisherUpdateToOneWithWhereWithoutProductsInput = {
 export type PublisherUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -374,7 +374,7 @@ export type PublisherUpdateWithoutProductsInput = {
 export type PublisherUncheckedUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -460,7 +460,7 @@ export type $PublisherPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
-    logoUrl: string | null
+    logoUrl: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["publisher"]>

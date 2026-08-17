@@ -143,6 +143,7 @@ export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typ
 export const AuthorScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  imgUrl: 'imgUrl',
   description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

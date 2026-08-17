@@ -1,7 +1,6 @@
 import { PageQueryDto } from '../../../common/dto/page-query.dto';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { UserRole } from '../../../generated/prisma/enums';
-import { ApiPropertyOptional } from '@nestjs/swagger';
 
 
 

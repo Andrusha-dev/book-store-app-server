@@ -291,10 +291,10 @@ export type ProductGroupByOutputType = {
   description: string | null
   quantity: number
   status: $Enums.ProductStatus
-  widthMm: number | null
-  heightMm: number | null
-  depthMm: number | null
-  weightGrams: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -336,10 +336,10 @@ export type ProductWhereInput = {
   description?: Prisma.StringNullableFilter<"Product"> | string | null
   quantity?: Prisma.IntFilter<"Product"> | number
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
-  widthMm?: Prisma.IntNullableFilter<"Product"> | number | null
-  heightMm?: Prisma.IntNullableFilter<"Product"> | number | null
-  depthMm?: Prisma.IntNullableFilter<"Product"> | number | null
-  weightGrams?: Prisma.IntNullableFilter<"Product"> | number | null
+  widthMm?: Prisma.IntFilter<"Product"> | number
+  heightMm?: Prisma.IntFilter<"Product"> | number
+  depthMm?: Prisma.IntFilter<"Product"> | number
+  weightGrams?: Prisma.IntFilter<"Product"> | number
   isbn?: Prisma.StringFilter<"Product"> | string
   pages?: Prisma.IntFilter<"Product"> | number
   coverType?: Prisma.EnumCoverTypeFilter<"Product"> | $Enums.CoverType
@@ -361,10 +361,10 @@ export type ProductOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  widthMm?: Prisma.SortOrderInput | Prisma.SortOrder
-  heightMm?: Prisma.SortOrderInput | Prisma.SortOrder
-  depthMm?: Prisma.SortOrderInput | Prisma.SortOrder
-  weightGrams?: Prisma.SortOrderInput | Prisma.SortOrder
+  widthMm?: Prisma.SortOrder
+  heightMm?: Prisma.SortOrder
+  depthMm?: Prisma.SortOrder
+  weightGrams?: Prisma.SortOrder
   isbn?: Prisma.SortOrder
   pages?: Prisma.SortOrder
   coverType?: Prisma.SortOrder
@@ -390,10 +390,10 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Product"> | string | null
   quantity?: Prisma.IntFilter<"Product"> | number
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
-  widthMm?: Prisma.IntNullableFilter<"Product"> | number | null
-  heightMm?: Prisma.IntNullableFilter<"Product"> | number | null
-  depthMm?: Prisma.IntNullableFilter<"Product"> | number | null
-  weightGrams?: Prisma.IntNullableFilter<"Product"> | number | null
+  widthMm?: Prisma.IntFilter<"Product"> | number
+  heightMm?: Prisma.IntFilter<"Product"> | number
+  depthMm?: Prisma.IntFilter<"Product"> | number
+  weightGrams?: Prisma.IntFilter<"Product"> | number
   pages?: Prisma.IntFilter<"Product"> | number
   coverType?: Prisma.EnumCoverTypeFilter<"Product"> | $Enums.CoverType
   language?: Prisma.StringFilter<"Product"> | string
@@ -414,10 +414,10 @@ export type ProductOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  widthMm?: Prisma.SortOrderInput | Prisma.SortOrder
-  heightMm?: Prisma.SortOrderInput | Prisma.SortOrder
-  depthMm?: Prisma.SortOrderInput | Prisma.SortOrder
-  weightGrams?: Prisma.SortOrderInput | Prisma.SortOrder
+  widthMm?: Prisma.SortOrder
+  heightMm?: Prisma.SortOrder
+  depthMm?: Prisma.SortOrder
+  weightGrams?: Prisma.SortOrder
   isbn?: Prisma.SortOrder
   pages?: Prisma.SortOrder
   coverType?: Prisma.SortOrder
@@ -444,10 +444,10 @@ export type ProductScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   quantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
   status?: Prisma.EnumProductStatusWithAggregatesFilter<"Product"> | $Enums.ProductStatus
-  widthMm?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
-  heightMm?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
-  depthMm?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
-  weightGrams?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
+  widthMm?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  heightMm?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  depthMm?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  weightGrams?: Prisma.IntWithAggregatesFilter<"Product"> | number
   isbn?: Prisma.StringWithAggregatesFilter<"Product"> | string
   pages?: Prisma.IntWithAggregatesFilter<"Product"> | number
   coverType?: Prisma.EnumCoverTypeWithAggregatesFilter<"Product"> | $Enums.CoverType
@@ -466,10 +466,10 @@ export type ProductCreateInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -489,10 +489,10 @@ export type ProductUncheckedCreateInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -512,10 +512,10 @@ export type ProductUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -535,10 +535,10 @@ export type ProductUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -558,10 +558,10 @@ export type ProductCreateManyInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -580,10 +580,10 @@ export type ProductUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -600,10 +600,10 @@ export type ProductUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -879,10 +879,10 @@ export type ProductCreateWithoutCategoriesInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -901,10 +901,10 @@ export type ProductUncheckedCreateWithoutCategoriesInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -947,10 +947,10 @@ export type ProductScalarWhereInput = {
   description?: Prisma.StringNullableFilter<"Product"> | string | null
   quantity?: Prisma.IntFilter<"Product"> | number
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
-  widthMm?: Prisma.IntNullableFilter<"Product"> | number | null
-  heightMm?: Prisma.IntNullableFilter<"Product"> | number | null
-  depthMm?: Prisma.IntNullableFilter<"Product"> | number | null
-  weightGrams?: Prisma.IntNullableFilter<"Product"> | number | null
+  widthMm?: Prisma.IntFilter<"Product"> | number
+  heightMm?: Prisma.IntFilter<"Product"> | number
+  depthMm?: Prisma.IntFilter<"Product"> | number
+  weightGrams?: Prisma.IntFilter<"Product"> | number
   isbn?: Prisma.StringFilter<"Product"> | string
   pages?: Prisma.IntFilter<"Product"> | number
   coverType?: Prisma.EnumCoverTypeFilter<"Product"> | $Enums.CoverType
@@ -969,10 +969,10 @@ export type ProductCreateWithoutAuthorInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -991,10 +991,10 @@ export type ProductUncheckedCreateWithoutAuthorInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -1039,10 +1039,10 @@ export type ProductCreateWithoutPublisherInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -1061,10 +1061,10 @@ export type ProductUncheckedCreateWithoutPublisherInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -1109,10 +1109,10 @@ export type ProductUpdateWithoutCategoriesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -1131,10 +1131,10 @@ export type ProductUncheckedUpdateWithoutCategoriesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -1153,10 +1153,10 @@ export type ProductUncheckedUpdateManyWithoutCategoriesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -1175,10 +1175,10 @@ export type ProductCreateManyAuthorInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -1196,10 +1196,10 @@ export type ProductUpdateWithoutAuthorInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -1218,10 +1218,10 @@ export type ProductUncheckedUpdateWithoutAuthorInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -1240,10 +1240,10 @@ export type ProductUncheckedUpdateManyWithoutAuthorInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -1261,10 +1261,10 @@ export type ProductCreateManyPublisherInput = {
   description?: string | null
   quantity?: number
   status?: $Enums.ProductStatus
-  widthMm?: number | null
-  heightMm?: number | null
-  depthMm?: number | null
-  weightGrams?: number | null
+  widthMm: number
+  heightMm: number
+  depthMm: number
+  weightGrams: number
   isbn: string
   pages: number
   coverType: $Enums.CoverType
@@ -1282,10 +1282,10 @@ export type ProductUpdateWithoutPublisherInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -1304,10 +1304,10 @@ export type ProductUncheckedUpdateWithoutPublisherInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -1326,10 +1326,10 @@ export type ProductUncheckedUpdateManyWithoutPublisherInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
-  widthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  heightMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  depthMm?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  weightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  widthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  heightMm?: Prisma.IntFieldUpdateOperationsInput | number
+  depthMm?: Prisma.IntFieldUpdateOperationsInput | number
+  weightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   isbn?: Prisma.StringFieldUpdateOperationsInput | string
   pages?: Prisma.IntFieldUpdateOperationsInput | number
   coverType?: Prisma.EnumCoverTypeFieldUpdateOperationsInput | $Enums.CoverType
@@ -1497,10 +1497,10 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     description: string | null
     quantity: number
     status: $Enums.ProductStatus
-    widthMm: number | null
-    heightMm: number | null
-    depthMm: number | null
-    weightGrams: number | null
+    widthMm: number
+    heightMm: number
+    depthMm: number
+    weightGrams: number
     isbn: string
     pages: number
     coverType: $Enums.CoverType

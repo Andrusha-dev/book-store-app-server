@@ -70,15 +70,15 @@ enum ProductStatus {
 model Product {
   id          String        @id @default(uuid(7))
   name        String
-  imgUrls     String[]      @default([])
+  imgUrls     String[]
   price       Decimal       @db.Decimal(10, 2)
   description String?       @db.Text
   quantity    Int           @default(0)
   status      ProductStatus @default(DRAFT)
-  widthMm     Int?
-  heightMm    Int?
-  depthMm     Int?
-  weightGrams Int?
+  widthMm     Int
+  heightMm    Int
+  depthMm     Int
+  weightGrams Int
   isbn        String        @unique
   pages       Int
   coverType   CoverType
@@ -105,6 +105,7 @@ model Category {
 model Author {
   id          String   @id @default(uuid(7))
   name        String   @unique
+  imgUrl      String
   description String?  @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -115,7 +116,7 @@ model Author {
 model Publisher {
   id        String   @id @default(uuid(7))
   name      String   @unique
-  logoUrl   String?
+  logoUrl   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
