@@ -18,19 +18,22 @@ import { PageMetaDto } from '../../common/dto/page-meta.dto';
 export class UserService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly logger: Logger
+    private readonly logger: Logger,
   ) {}
 
-  async create(dto: CreateUserDto): Promise<UserResponseDto>  {
+  async create(dto: CreateUserDto): Promise<UserResponseDto> {
     const passwordHash: string = await bcrypt.hash(dto.password, 10);
 
-    const data: Prisma.UserCreateInput = UserMapper.toCreateInput(dto, passwordHash);
+    const data: Prisma.UserCreateInput = UserMapper.toCreateInput(
+      dto,
+      passwordHash,
+    );
 
     const user: UserEntity = await this.prismaService.user.create({
       data,
-      include: userInclude
+      include: userInclude,
     });
-    this.logger.log("User created");
+    this.logger.log('User created');
 
     const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
 
@@ -38,7 +41,7 @@ export class UserService {
   }
 
   async findMany(queryDto: UsersQueryDto): Promise<UsersResponseDto> {
-    const {sortBy, sortOrder, pageNo, pageSize, ...filters} = queryDto;
+    const { sortBy, sortOrder, pageNo, pageSize, ...filters } = queryDto;
 
     const where: Prisma.UserWhereInput = UserMapper.toWhereInput(filters);
 
@@ -55,18 +58,20 @@ export class UserService {
       this.prismaService.user.count({ where }),
     ]);
 
-    const data: UserResponseDto[] = userEntities.map(user => UserMapper.toResponseDto(user))
+    const data: UserResponseDto[] = userEntities.map((user) =>
+      UserMapper.toResponseDto(user),
+    );
     const meta: PageMetaDto = new PageMetaDto(pageNo, pageSize, totalElements);
 
     const responseDto: UsersResponseDto = new UsersResponseDto(data, meta);
 
-    return responseDto
+    return responseDto;
   }
 
   async findOne(id: string): Promise<UserResponseDto> {
     const user: UserEntity | null = await this.prismaService.user.findUnique({
       where: { id },
-      include: userInclude
+      include: userInclude,
     });
 
     if (!user) {
@@ -79,12 +84,12 @@ export class UserService {
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
-    const data: Prisma.UserUpdateInput = { ...dto }
+    const data: Prisma.UserUpdateInput = { ...dto };
 
     const updatedUser: UserEntity = await this.prismaService.user.update({
-      where: {id},
+      where: { id },
       data,
-      include: userInclude
+      include: userInclude,
     });
 
     const responseDto: UserResponseDto = UserMapper.toResponseDto(updatedUser);
@@ -92,7 +97,10 @@ export class UserService {
     return responseDto;
   }
 
-  async verifyCredentials(email: string, password: string): Promise<UserResponseDto | null> {
+  async verifyCredentials(
+    email: string,
+    password: string,
+  ): Promise<UserResponseDto | null> {
     const user: UserEntity | null = await this.findByEmail(email);
     if (!user) return null;
 
@@ -105,7 +113,12 @@ export class UserService {
     return responseDto;
   }
 
-  async verifyOrCreateOAuthUser (provider: IdentityProvider, providerId: string, email: string): Promise<UserResponseDto> {
+  /*
+  async verifyOrCreateOAuthUser(
+    provider: IdentityProvider,
+    providerId: string,
+    email: string,
+  ): Promise<UserResponseDto> {
     let user: UserEntity | null = await this.prismaService.user.findFirst({
       where: {
         identities: {
@@ -115,7 +128,7 @@ export class UserService {
           },
         },
       },
-      include: userInclude
+      include: userInclude,
     });
 
     //Якщо користувача не знайдено
@@ -129,11 +142,11 @@ export class UserService {
           where: { id: existingUser.id },
           data: {
             identities: {
-              create: { provider, providerId }
-            }
+              create: { provider, providerId },
+            },
           },
-          include: userInclude
-        })
+          include: userInclude,
+        });
       } else {
         //Якщо користувача не існує ні через provider+providerId ні через email, то створюєм нового користувача з Identity
         user = await this.prismaService.user.create({
@@ -152,6 +165,20 @@ export class UserService {
     }
 
     const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
+    return responseDto;
+  }
+   */
+
+  //Метод для виклику в AuthService під час OAuth автентифікації
+  async findOrCreateByEmail(email: string): Promise<UserResponseDto> {
+    let user: UserEntity | null = await this.findByEmail(email);
+    if (!user) {
+      user = await this.prismaService.user.create({
+        data: { email },
+        include: userInclude
+      });
+    }
+    const responseDto = UserMapper.toResponseDto(user);
     return responseDto;
   }
 
