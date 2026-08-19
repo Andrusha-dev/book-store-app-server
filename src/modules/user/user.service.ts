@@ -11,7 +11,7 @@ import { Logger } from 'nestjs-pino';
 import { UserMapper } from './user.mapper';
 import type { UsersQueryDto } from './dto/users-query.dto';
 import { UsersResponseDto } from './dto/users-response.dto';
-import { PageMetaDto } from '../../common/dto/page-response.dto';
+import { PageMetaDto } from '../../common/dto/page-meta.dto';
 
 
 @Injectable()

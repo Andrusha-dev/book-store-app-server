@@ -10,7 +10,7 @@ import {
 import { ErrorResponseDto } from '../dto/error.dto';
 
 
-export const ApiErrorResponse = () => {
+export const ApiErrors = () => {
   return applyDecorators(
     ApiBadRequestResponse({description: 'Bad request / Помилка валідації даних', type: ErrorResponseDto}),
     ApiUnauthorizedResponse({description: 'Unauthorized / Користувач не автентифікований', type: ErrorResponseDto}),

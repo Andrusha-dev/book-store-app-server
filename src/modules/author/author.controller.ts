@@ -1,11 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { AuthorService } from './author.service';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
-import { ApiOkResponse } from '@nestjs/swagger';
 import { AuthorResponseDto } from './dto/author-response.dto';
-import { ApiErrorResponse } from '../../common/decorators/api-error-response.decorator';
 import { Auth } from '../../common/decorators/auth.decorator';
+import { ApiErrors } from '../../common/decorators/api-errors.decorator';
+import { AuthorsResponseDto } from './dto/authors-response.dto';
+import { AuthorsQueryDto } from './dto/authors-query.dto';
 
 @Controller('authors')
 export class AuthorController {
@@ -13,16 +14,18 @@ export class AuthorController {
 
   @Post()
   @Auth("ADMIN")
-  @ApiOkResponse({ type: AuthorResponseDto })
-  @ApiErrorResponse()
-  async create(@Body() createAuthorDto: CreateAuthorDto): Promise<CreateAuthorDto> {
-    const responseDto = await this.authorService.create(createAuthorDto);
+  @ApiErrors()
+  async create(@Body() dto: CreateAuthorDto): Promise<AuthorResponseDto> {
+    const responseDto = await this.authorService.create(dto);
     return responseDto;
   }
 
   @Get()
-  findAll() {
-    return this.authorService.findAll();
+  @ApiErrors()
+  async findMany(@Query() queryDto: AuthorsQueryDto ): Promise<AuthorsResponseDto> {
+    console.log('RAW queryDto:', queryDto);
+    const responseDto: AuthorsResponseDto = await this.authorService.findMany(queryDto);
+    return responseDto;
   }
 
   @Get(':id')

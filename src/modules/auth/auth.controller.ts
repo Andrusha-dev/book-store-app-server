@@ -18,9 +18,8 @@ import type { IOAuthUser } from './types/oauth-user.interface';
 import { ConfigService } from '@nestjs/config';
 import type { AppConfig } from '../../core/config/app-config.schema';
 import { OAuthUser } from './decorators/oauth-user.decorator';
-import { ApiErrorResponse } from '../../common/decorators/api-error-response.decorator';
-import { ApiOkResponse } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
+import { ApiErrors } from '../../common/decorators/api-errors.decorator';
 
 
 @Controller('auth')
@@ -33,8 +32,8 @@ export class AuthController {
 
   //автентифікація через email + password
   @Post('login-with-credentials')
-  @ApiOkResponse({ type: AuthResponseDto })
-  @ApiErrorResponse()
+
+  @ApiErrors()
   async loginWithCredentials(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -79,8 +78,7 @@ export class AuthController {
   //Відновлення jwt токена
   @Post('refresh')
   @UseGuards(JwtRefreshGuard)
-  @ApiOkResponse({ type: AuthResponseDto })
-  @ApiErrorResponse()
+  @ApiErrors()
   refresh(
     @CurrentUser() user: ITokenPayload,
     @Res({ passthrough: true }) res: Response,

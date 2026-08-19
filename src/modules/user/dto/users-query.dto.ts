@@ -1,5 +1,5 @@
 import { PageQueryDto } from '../../../common/dto/page-query.dto';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { UserRole } from '../../../generated/prisma/enums';
 
 
@@ -19,6 +19,7 @@ export class UsersQueryDto extends PageQueryDto {
   readonly role?: UserRole;
 
   @IsString()
+  @IsNotEmpty()
   @IsOptional()
   readonly search?: string;
 }

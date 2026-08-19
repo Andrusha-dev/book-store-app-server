@@ -1,6 +1,6 @@
 import {
   PageMetaDto,
-} from '../../../common/dto/page-response.dto';
+} from '../../../common/dto/page-meta.dto';
 import type { UserResponseDto } from './user-response.dto';
 
 

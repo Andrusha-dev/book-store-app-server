@@ -11,14 +11,13 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiErrorResponse } from '../../common/decorators/api-error-response.decorator';
 import { UserResponseDto } from './dto/user-response.dto';
-import { ApiOkResponse } from '@nestjs/swagger';
 import { Auth } from '../../common/decorators/auth.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { ITokenPayload } from '../../common/types/token-payload.interface';
 import { UsersResponseDto } from './dto/users-response.dto';
 import { UsersQueryDto } from './dto/users-query.dto';
+import { ApiErrors } from '../../common/decorators/api-errors.decorator';
 
 
 @Controller('users')
@@ -27,8 +26,8 @@ export class UserController {
   constructor(private readonly usersService: UserService) {}
 
   @Post()
-  @ApiOkResponse({ type: UserResponseDto })
-  @ApiErrorResponse()
+  //@ApiOkResponse({ type: UserResponseDto })
+  @ApiErrors()
   async create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
     const responseDto: UserResponseDto = await this.usersService.create(dto);
     return responseDto;
@@ -36,20 +35,17 @@ export class UserController {
 
   @Get()
   @Auth('ADMIN')
-  @ApiOkResponse({ type: UsersResponseDto })
-  @ApiErrorResponse()
+  @ApiErrors()
   async findMany(
     @Query() queryDto: UsersQueryDto
   ): Promise<UsersResponseDto> {
-    const responseDto: UsersResponseDto =
-      await this.usersService.findMany(queryDto);
+    const responseDto: UsersResponseDto = await this.usersService.findMany(queryDto);
     return responseDto;
   }
 
   @Get('me')
   @Auth()
-  @ApiOkResponse({ type: UserResponseDto })
-  @ApiErrorResponse()
+  @ApiErrors()
   async findMe(@CurrentUser() user: ITokenPayload): Promise<UserResponseDto> {
     const responseDto: UserResponseDto = await this.usersService.findOne(
       user.id,
@@ -59,8 +55,7 @@ export class UserController {
 
   @Get(':id')
   @Auth('ADMIN')
-  @ApiOkResponse({ type: UserResponseDto })
-  @ApiErrorResponse()
+  @ApiErrors()
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
     const responseDto: UserResponseDto = await this.usersService.findOne(id);
     return responseDto;
@@ -68,6 +63,7 @@ export class UserController {
 
   @Patch('me')
   @Auth()
+  @ApiErrors()
   async update(
     @CurrentUser() user: ITokenPayload,
     @Body() dto: UpdateUserDto,

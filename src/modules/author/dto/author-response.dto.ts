@@ -1,9 +1,10 @@
 
+
 export class AuthorResponseDto {
-  id: string;
-  name: string;
-  imgUrl: string;
-  description?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  readonly id: string;
+  readonly name: string;
+  readonly imgUrl: string;
+  readonly description?: string;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 }

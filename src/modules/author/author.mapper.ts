@@ -2,6 +2,7 @@ import type { CreateAuthorDto } from './dto/create-author.dto';
 import { Prisma } from '../../generated/prisma/client';
 import type { AuthorEntity } from './entities/author.entity';
 import type { AuthorResponseDto } from './dto/author-response.dto';
+import type { UsersQueryDto } from '../user/dto/users-query.dto';
 
 export class AuthorMapper {
   static toCreateInput(dto: CreateAuthorDto): Prisma.AuthorCreateInput {
@@ -14,7 +15,17 @@ export class AuthorMapper {
     return data;
   }
 
-  static toAuthorResponseDto(author: AuthorEntity): AuthorResponseDto {
+  static toWhereInput(filters: Omit<UsersQueryDto, "sortBy" | "sortOrder" | "pageNo" | "pageSize">): Prisma.AuthorWhereInput {
+    const where: Prisma.AuthorWhereInput = {
+      name: filters.search
+        ? {contains: filters.search, mode: 'insensitive'}
+        : undefined
+    }
+
+    return where;
+  }
+
+  static toResponseDto(author: AuthorEntity): AuthorResponseDto {
     const responseDto: AuthorResponseDto = {
       id: author.id,
       name: author.name,
