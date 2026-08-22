@@ -6,7 +6,6 @@ import type { ITokenPayload } from '../../common/types/token-payload.interface';
 import { ConfigService } from '@nestjs/config';
 import type { AppConfig } from '../../core/config/app-config.schema';
 import type { IdentityProvider } from '../../generated/prisma/enums';
-import type { UserEntity } from '../user/entities/user.entity';
 import type { IdentityEntity } from './entities/identity.entity';
 import { PrismaService } from '../../core/database/prisma.service';
 import { UserResponseDto } from '../user/dto/user-response.dto';
@@ -82,20 +81,6 @@ export class AuthService {
     const result: IAuthResult = this.generateTokens(tokenPayload);
 
     return result;
-
-    /*
-    const user = await this.userService.verifyOrCreateOAuthUser(provider, providerId, email);
-
-    const tokenPayload: ITokenPayload = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    };
-
-    const result: IAuthResult = this.generateTokens(tokenPayload)
-
-    return result;
-     */
   }
 
   refreshTokens(payload: ITokenPayload): IAuthResult {

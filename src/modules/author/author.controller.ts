@@ -8,6 +8,7 @@ import { ApiErrors } from '../../common/decorators/api-errors.decorator';
 import { AuthorsResponseDto } from './dto/authors-response.dto';
 import { AuthorsQueryDto } from './dto/authors-query.dto';
 
+
 @Controller('authors')
 export class AuthorController {
   constructor(private readonly authorService: AuthorService) {}
@@ -16,30 +17,35 @@ export class AuthorController {
   @Auth("ADMIN")
   @ApiErrors()
   async create(@Body() dto: CreateAuthorDto): Promise<AuthorResponseDto> {
-    const responseDto = await this.authorService.create(dto);
-    return responseDto;
+    return await this.authorService.create(dto);
   }
 
   @Get()
   @ApiErrors()
   async findMany(@Query() queryDto: AuthorsQueryDto ): Promise<AuthorsResponseDto> {
-    console.log('RAW queryDto:', queryDto);
-    const responseDto: AuthorsResponseDto = await this.authorService.findMany(queryDto);
-    return responseDto;
+    return await this.authorService.findMany(queryDto);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authorService.findOne(+id);
+  @ApiErrors()
+  async findOne(@Param('id') id: string): Promise<AuthorResponseDto> {
+    return await this.authorService.findOne(id)
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthorDto: UpdateAuthorDto) {
-    return this.authorService.update(+id, updateAuthorDto);
+  @Auth("ADMIN")
+  @ApiErrors()
+  async update(
+    @Param('id') id: string,
+    @Body() updateAuthorDto: UpdateAuthorDto
+  ): Promise<AuthorResponseDto> {
+    return await this.authorService.update(id, updateAuthorDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authorService.remove(+id);
+  @Auth("ADMIN")
+  @ApiErrors()
+  async remove(@Param('id') id: string): Promise<AuthorResponseDto> {
+    return await this.authorService.remove(id);
   }
 }

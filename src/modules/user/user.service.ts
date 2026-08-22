@@ -1,11 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { type UserEntity, userInclude} from './entities/user.entity';
+import { type UserEntity} from './entities/user.entity';
 import { PrismaService } from '../../core/database/prisma.service';
 import { UserResponseDto } from './dto/user-response.dto';
-import * as bcrypt from "bcrypt"
-import type { IdentityProvider } from '../../generated/prisma/enums';
+import * as bcrypt from "bcrypt";
 import { Prisma } from '../../generated/prisma/client';
 import { Logger } from 'nestjs-pino';
 import { UserMapper } from './user.mapper';
@@ -30,8 +29,7 @@ export class UserService {
     );
 
     const user: UserEntity = await this.prismaService.user.create({
-      data,
-      include: userInclude,
+      data
     });
     this.logger.log('User created');
 
@@ -52,8 +50,7 @@ export class UserService {
           [sortBy]: sortOrder,
         },
         take: pageSize,
-        skip: pageNo * pageSize,
-        include: userInclude,
+        skip: pageNo * pageSize
       }),
       this.prismaService.user.count({ where }),
     ]);
@@ -70,8 +67,7 @@ export class UserService {
 
   async findOne(id: string): Promise<UserResponseDto> {
     const user: UserEntity | null = await this.prismaService.user.findUnique({
-      where: { id },
-      include: userInclude,
+      where: { id }
     });
 
     if (!user) {
@@ -88,8 +84,7 @@ export class UserService {
 
     const updatedUser: UserEntity = await this.prismaService.user.update({
       where: { id },
-      data,
-      include: userInclude,
+      data
     });
 
     const responseDto: UserResponseDto = UserMapper.toResponseDto(updatedUser);
@@ -113,69 +108,12 @@ export class UserService {
     return responseDto;
   }
 
-  /*
-  async verifyOrCreateOAuthUser(
-    provider: IdentityProvider,
-    providerId: string,
-    email: string,
-  ): Promise<UserResponseDto> {
-    let user: UserEntity | null = await this.prismaService.user.findFirst({
-      where: {
-        identities: {
-          some: {
-            provider: provider,
-            providerId: providerId,
-          },
-        },
-      },
-      include: userInclude,
-    });
-
-    //Якщо користувача не знайдено
-    if (!user) {
-      //Первіряємо чи існує користувач з переданим email
-      const existingUser: UserEntity | null = await this.findByEmail(email);
-
-      if (existingUser) {
-        // Оновлюємо існуючого користувача: додаємо нову identity
-        user = await this.prismaService.user.update({
-          where: { id: existingUser.id },
-          data: {
-            identities: {
-              create: { provider, providerId },
-            },
-          },
-          include: userInclude,
-        });
-      } else {
-        //Якщо користувача не існує ні через provider+providerId ні через email, то створюєм нового користувача з Identity
-        user = await this.prismaService.user.create({
-          data: {
-            email: email ?? null, //якщо провайдер не повернув email, то вказуєм null
-            identities: {
-              create: {
-                provider: provider,
-                providerId: providerId,
-              },
-            },
-          },
-          include: userInclude,
-        });
-      }
-    }
-
-    const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
-    return responseDto;
-  }
-   */
-
   //Метод для виклику в AuthService під час OAuth автентифікації
   async findOrCreateByEmail(email: string): Promise<UserResponseDto> {
     let user: UserEntity | null = await this.findByEmail(email);
     if (!user) {
       user = await this.prismaService.user.create({
-        data: { email },
-        include: userInclude
+        data: { email }
       });
     }
     const responseDto = UserMapper.toResponseDto(user);
@@ -186,8 +124,7 @@ export class UserService {
     const user: UserEntity | null = await this.prismaService.user.findUnique({
       where: {
         email: email,
-      },
-      include: userInclude,
+      }
     });
 
     return user;

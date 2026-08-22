@@ -1,9 +1,7 @@
 import {
-  type IdentityEntity,
   type UserEntity,
 } from './entities/user.entity';
 import {
-  IdentityResponseDto,
   type UserResponseDto,
 } from './dto/user-response.dto';
 import type { CreateUserDto } from './dto/create-user.dto';
@@ -64,25 +62,6 @@ export class UserMapper {
       role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      identities: user.identities.map((identityEntity) =>
-        UserMapper.toIdentityResponseDto(identityEntity),
-      ),
-    };
-
-    return responseDto;
-  }
-
-  //Приватний метод для мапінга до IdentityResponseDto
-  private static toIdentityResponseDto(
-    identity: IdentityEntity,
-  ): IdentityResponseDto {
-    const responseDto: IdentityResponseDto = {
-      id: identity.id,
-      provider: identity.provider,
-      providerId: identity.providerId,
-      createdAt: identity.createdAt,
-      updatedAt: identity.updatedAt,
-      userId: identity.userId,
     };
 
     return responseDto;

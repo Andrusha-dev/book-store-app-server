@@ -1,5 +1,4 @@
 import type {
-  IdentityProvider,
   UserRole,
 } from '../../../generated/prisma/enums';
 
@@ -17,9 +16,9 @@ export class UserResponseDto {
   role: UserRole;
   createdAt: Date; //Date автоматично серіалізується в string
   updatedAt: Date; //Date автоматично серіалізується в string
-  identities: IdentityResponseDto[];
 }
 
+/*
 export class IdentityResponseDto {
   id: string;
   provider: IdentityProvider;
@@ -28,3 +27,4 @@ export class IdentityResponseDto {
   updatedAt: Date;
   userId: string;
 }
+*/

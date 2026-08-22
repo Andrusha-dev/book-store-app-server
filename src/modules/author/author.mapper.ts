@@ -3,10 +3,21 @@ import { Prisma } from '../../generated/prisma/client';
 import type { AuthorEntity } from './entities/author.entity';
 import type { AuthorResponseDto } from './dto/author-response.dto';
 import type { UsersQueryDto } from '../user/dto/users-query.dto';
+import type { UpdateAuthorDto } from './dto/update-author.dto';
 
 export class AuthorMapper {
   static toCreateInput(dto: CreateAuthorDto): Prisma.AuthorCreateInput {
     const data: Prisma.AuthorCreateInput = {
+      name: dto.name,
+      imgUrl: dto.imgUrl,
+      description: dto.description,
+    }
+
+    return data;
+  }
+
+  static toUpdateInput(dto: UpdateAuthorDto): Prisma.AuthorUpdateInput {
+    const data: Prisma.AuthorUpdateInput = {
       name: dto.name,
       imgUrl: dto.imgUrl,
       description: dto.description,

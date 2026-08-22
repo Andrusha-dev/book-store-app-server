@@ -88,9 +88,9 @@ model Product {
 
   categories  Category[]
   authorId    String
-  author      Author     @relation(fields: [authorId], references: [id])
+  author      Author     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   publisherId String
-  publisher   Publisher  @relation(fields: [publisherId], references: [id])
+  publisher   Publisher  @relation(fields: [publisherId], references: [id], onDelete: Cascade)
 }
 
 model Category {
