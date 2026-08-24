@@ -37,9 +37,9 @@ export class AuthorController {
   @ApiErrors()
   async update(
     @Param('id') id: string,
-    @Body() updateAuthorDto: UpdateAuthorDto
+    @Body() dto: UpdateAuthorDto
   ): Promise<AuthorResponseDto> {
-    return await this.authorService.update(id, updateAuthorDto);
+    return await this.authorService.update(id, dto);
   }
 
   @Delete(':id')

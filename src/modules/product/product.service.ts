@@ -35,6 +35,19 @@ export class ProductService {
     return products.map(product => ProductMapper.toResponseDto(product));
   }
 
+  async findProductsByCategoryId(categoryId: string): Promise<ProductResponseDto[]> {
+    const products: ProductEntity[] = await this.prismaService.product.findMany({
+      where: {
+        categories: {
+          some: { id: categoryId }
+        }
+      },
+      include: productInclude
+    });
+
+    return products.map(product => ProductMapper.toResponseDto(product));
+  }
+
   update(id: number, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }

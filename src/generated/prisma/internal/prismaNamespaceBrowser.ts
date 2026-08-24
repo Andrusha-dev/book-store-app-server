@@ -155,7 +155,6 @@ export type AuthorScalarFieldEnum = (typeof AuthorScalarFieldEnum)[keyof typeof 
 export const PublisherScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  logoUrl: 'logoUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

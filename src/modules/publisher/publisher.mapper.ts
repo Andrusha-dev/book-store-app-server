@@ -1,12 +1,32 @@
 import type { PublisherEntity } from './entities/publisher.entity';
-import type { PublisherResponseDto } from './dto/publiser-response.dto';
+import { PublisherResponseDto } from './dto/publiser-response.dto';
+import { CreatePublisherDto } from './dto/create-publisher.dto';
+import { Prisma } from '../../generated/prisma/client';
+import type { PublishersQueryDto } from './dto/publishers-query.dto';
 
 export class PublisherMapper {
+  static toCreateInput(dto: CreatePublisherDto): Prisma.PublisherCreateInput {
+    const data: Prisma.PublisherCreateInput = {
+      name: dto.name
+    }
+
+    return data;
+  }
+
+  static toWhereInput(filters: Omit<PublishersQueryDto, "sortBy" | "sortOrder" | "pageNo" | "pageSize">): Prisma.PublisherWhereInput {
+    const where: Prisma.PublisherWhereInput = {
+      name: filters.search
+        ? {contains: filters.search, mode: 'insensitive'}
+        : undefined
+    }
+
+    return where;
+  }
+
   static toResponseDto(publisher: PublisherEntity): PublisherResponseDto {
     const responseDto: PublisherResponseDto = {
       id: publisher.id,
       name: publisher.name,
-      logoUrl: publisher.logoUrl,
       createdAt: publisher.createdAt,
       updatedAt: publisher.updatedAt
     }

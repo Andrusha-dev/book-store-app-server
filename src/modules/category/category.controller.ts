@@ -19,22 +19,32 @@ export class CategoryController {
   }
 
   @Get()
-  findAll() {
-    return this.categoryService.findAll();
+  @ApiErrors()
+  async findAll(): Promise<CategoryResponseDto[]> {
+    return await this.categoryService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoryService.findOne(+id);
+  @Auth("ADMIN")
+  @ApiErrors()
+  async findOne(@Param('id') id: string): Promise<CategoryResponseDto> {
+    return await this.categoryService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryService.update(+id, updateCategoryDto);
+  @Auth("ADMIN")
+  @ApiErrors()
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateCategoryDto
+  ): Promise<CategoryResponseDto> {
+    return await this.categoryService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoryService.remove(+id);
+  @Auth("ADMIN")
+  @ApiErrors()
+  async remove(@Param('id') id: string): Promise<CategoryResponseDto> {
+    return await this.categoryService.remove(id);
   }
 }
