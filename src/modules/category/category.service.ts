@@ -57,15 +57,18 @@ export class CategoryService {
   }
 
   async remove(id: string): Promise<CategoryResponseDto> {
-    const products: ProductResponseDto[] = await this.productService.findProductsByCategoryId(id);
+    const products: ProductResponseDto[] =
+      await this.productService.findProductsByCategoryId(id);
 
-    const notRemovedProducts: ProductResponseDto[] = products.filter(product => product.status !== "DRAFT");
+    //Перевіряєм чи є книги, які мають лише цю категорію
+    const notRemovedProducts: ProductResponseDto[] = products.filter((product) => product.categories.length === 1);
 
-    if(notRemovedProducts.length) {
-      throw new BadRequestException(`Неможливо видалити категорію з id ${id}, оскільки є опубліковані товари даної категорії`)
+    //Якщо є, то видаляти категорію не можна, бо товар має відноситись хоча б до однієї категорії
+    if (notRemovedProducts.length) {
+      throw new BadRequestException(`Неможливо видалити категорію з id ${id}, оскільки є товари, де дана категорія є єдиною`,);
     }
 
-    const category: CategoryEntity = await this.prismaService.category.delete({where: {id}});
+    const category: CategoryEntity = await this.prismaService.category.delete({ where: { id }});
     this.logger.log(`Категорію з id ${id} успішно видалено`);
 
     return CategoryMapper.toResponseDto(category);

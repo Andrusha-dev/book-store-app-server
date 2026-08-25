@@ -14,8 +14,15 @@ export class ProductService {
     private readonly logger: Logger
   ) {}
 
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  async create(dto: CreateProductDto): Promise<ProductResponseDto> {
+    const data = ProductMapper.toCreateInput(dto);
+
+    const product: ProductEntity = await this.prismaService.product.create({
+      data,
+      include: productInclude
+    });
+
+    return ProductMapper.toResponseDto(product);
   }
 
   findAll() {
@@ -29,6 +36,15 @@ export class ProductService {
   async findProductsByAuthorId(authorId: string): Promise<ProductResponseDto[]> {
     const products: ProductEntity[] = await this.prismaService.product.findMany({
       where: {authorId},
+      include: productInclude
+    });
+
+    return products.map(product => ProductMapper.toResponseDto(product));
+  }
+
+  async findProductsByPublisherId(publisherId: string): Promise<ProductResponseDto[]> {
+    const products: ProductEntity[] = await this.prismaService.product.findMany({
+      where: { publisherId },
       include: productInclude
     });
 

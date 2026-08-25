@@ -26,17 +26,26 @@ export class PublisherController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.publisherService.findOne(+id);
+  @Auth("ADMIN")
+  @ApiErrors()
+  async findOne(@Param('id') id: string):Promise<PublisherResponseDto> {
+    return await this.publisherService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePublisherDto: UpdatePublisherDto) {
-    return this.publisherService.update(+id, updatePublisherDto);
+  @Auth("ADMIN")
+  @ApiErrors()
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdatePublisherDto
+  ): Promise<PublisherResponseDto> {
+    return await this.publisherService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.publisherService.remove(+id);
+  @Auth("ADMIN")
+  @ApiErrors()
+  async remove(@Param('id') id: string): Promise<PublisherResponseDto> {
+    return await this.publisherService.remove(id);
   }
 }

@@ -7,8 +7,39 @@ import type { PublisherResponseDto } from '../publisher/dto/publiser-response.dt
 import { AuthorMapper } from '../author/author.mapper';
 import { PublisherMapper } from '../publisher/publisher.mapper';
 import { CategoryMapper } from '../category/category.mapper';
+import type { CreateProductDto } from './dto/create-product.dto';
+import { Prisma } from '../../generated/prisma/client';
 
 export class ProductMapper {
+  static toCreateInput(dto: CreateProductDto): Prisma.ProductCreateInput {
+    const data: Prisma.ProductCreateInput = {
+      name: dto.name,
+      imgUrls: dto.imgUrls,
+      price: dto.price,
+      description: dto.description,
+      quantity: dto.quantity,
+      widthMm: dto.widthMm,
+      heightMm: dto.heightMm,
+      depthMm: dto.depthMm,
+      weightGrams: dto.weightGrams,
+      isbn: dto.isbn,
+      pages: dto.pages,
+      coverType: dto.coverType,
+      language: dto.language,
+      categories: {
+        connect: dto.categoryIds.map(id => ({id}))
+      },
+      author: {
+        connect: {id: dto.authorId}
+      },
+      publisher: {
+        connect: {id: dto.publisherId}
+      },
+    }
+
+    return data;
+  }
+
   static toResponseDto(product: ProductEntity): ProductResponseDto {
     const responseDto: ProductResponseDto = {
       id: product.id,

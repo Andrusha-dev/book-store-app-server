@@ -28,9 +28,7 @@ export class UserService {
       passwordHash,
     );
 
-    const user: UserEntity = await this.prismaService.user.create({
-      data
-    });
+    const user: UserEntity = await this.prismaService.user.create({ data });
     this.logger.log('User created');
 
     const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
@@ -55,9 +53,7 @@ export class UserService {
       this.prismaService.user.count({ where }),
     ]);
 
-    const data: UserResponseDto[] = userEntities.map((user) =>
-      UserMapper.toResponseDto(user),
-    );
+    const data: UserResponseDto[] = userEntities.map((user) => UserMapper.toResponseDto(user),);
     const meta: PageMetaDto = new PageMetaDto(pageNo, pageSize, totalElements);
 
     const responseDto: UsersResponseDto = new UsersResponseDto(data, meta);
@@ -121,11 +117,7 @@ export class UserService {
   }
 
   private async findByEmail(email: string): Promise<UserEntity | null> {
-    const user: UserEntity | null = await this.prismaService.user.findUnique({
-      where: {
-        email: email,
-      }
-    });
+    const user: UserEntity | null = await this.prismaService.user.findUnique({ where: { email } });
 
     return user;
   }

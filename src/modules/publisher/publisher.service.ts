@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePublisherDto } from './dto/create-publisher.dto';
 import { UpdatePublisherDto } from './dto/update-publisher.dto';
 import { PrismaService } from '../../core/database/prisma.service';
@@ -10,11 +10,13 @@ import { PublisherMapper } from './publisher.mapper';
 import { PublishersQueryDto } from './dto/publishers-query.dto';
 import { PublishersResponseDto } from './dto/publishers-response.dto';
 import { PageMetaDto } from '../../common/dto/page-meta.dto';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class PublisherService {
   constructor(
     private readonly prismaService: PrismaService,
+    private readonly productService: ProductService,
     private readonly logger: Logger
   ) {}
 
@@ -47,15 +49,42 @@ export class PublisherService {
     return {data, meta}
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} publisher`;
+  async findOne(id: string): Promise<PublisherResponseDto> {
+    const publisher: PublisherEntity | null = await this.prismaService.publisher.findUnique({where: {id}});
+
+    if(!publisher) {
+      throw new NotFoundException(`Видавництво з id ${id} не знайдено`);
+    }
+
+    return PublisherMapper.toResponseDto(publisher);
   }
 
-  update(id: number, updatePublisherDto: UpdatePublisherDto) {
-    return `This action updates a #${id} publisher`;
+  async update(id: string, dto: UpdatePublisherDto): Promise<PublisherResponseDto> {
+    const data = PublisherMapper.toUpdateInput(dto);
+
+    const publisher: PublisherEntity = await this.prismaService.publisher.update({
+      where: {id},
+      data
+    });
+    this.logger.log(`Видавництво з id ${id} успішно оновлено`);
+
+    return PublisherMapper.toResponseDto(publisher);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} publisher`;
+  async remove(id: string): Promise<PublisherResponseDto> {
+    const products = await this.productService.findProductsByPublisherId(id);
+
+    //Перевіряєм чи є книги цього видавництва, які мають статус, відмінний від DRAFT
+    const notRemovedProducts = products.filter(product => product.status !== "DRAFT");
+
+    //Якщо є, то видаляти таке видавництво не можна
+    if(notRemovedProducts.length) {
+      throw new BadRequestException(`Не можливо видалити видавництво з id ${id}, оскільки воно має опубліковані товари`);
+    }
+
+    const publisher: PublisherEntity = await this.prismaService.publisher.delete({ where: {id} });
+    this.logger.log(`Видавництво з id ${id} успішно видалено`);
+
+    return PublisherMapper.toResponseDto(publisher);
   }
 }

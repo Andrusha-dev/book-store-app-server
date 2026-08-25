@@ -24,9 +24,7 @@ export class CreateProductDto {
 
   @IsNumber(
     { maxDecimalPlaces: 2 },
-    {
-      message: 'Поле має бути числом (з двома розрядами після плаваючої точки)',
-    },
+    { message: 'Поле має бути числом (з двома розрядами після плаваючої точки)'},
   )
   @Min(0, { message: 'Поле не може бути менше 0' })
   price: number;
