@@ -72,7 +72,7 @@ export class PublisherService {
   }
 
   async remove(id: string): Promise<PublisherResponseDto> {
-    const products = await this.productService.findProductsByPublisherId(id);
+    const products = await this.productService.findManyByPublisherId(id);
 
     //Перевіряєм чи є книги цього видавництва, які мають статус, відмінний від DRAFT
     const notRemovedProducts = products.filter(product => product.status !== "DRAFT");

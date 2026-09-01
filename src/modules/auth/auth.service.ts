@@ -9,6 +9,7 @@ import type { IdentityProvider } from '../../generated/prisma/enums';
 import type { IdentityEntity } from './entities/identity.entity';
 import { PrismaService } from '../../core/database/prisma.service';
 import { UserResponseDto } from '../user/dto/user-response.dto';
+import type { CreateUserDto } from '../user/dto/create-user.dto';
 
 
 
@@ -27,6 +28,22 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService<AppConfig, true>,
   ) {}
+
+  //Метод для реєстрації користувача з подальшим автологіном
+  async register(dto: CreateUserDto): Promise<IAuthResult> {
+    const user = await this.userService.create(dto);
+
+    const tokenPayload: ITokenPayload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    // Генеруємо обидва токени
+    const result: IAuthResult = this.generateTokens(tokenPayload);
+
+    return result;
+  }
 
   async loginWithCredentials(dto: LoginDto): Promise<IAuthResult> {
     const user = await this.userService.verifyCredentials(dto.email, dto.password,);

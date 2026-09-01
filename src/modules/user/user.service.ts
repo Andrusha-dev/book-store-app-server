@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { type UserEntity} from './entities/user.entity';
 import { PrismaService } from '../../core/database/prisma.service';
@@ -8,9 +7,11 @@ import * as bcrypt from "bcrypt";
 import { Prisma } from '../../generated/prisma/client';
 import { Logger } from 'nestjs-pino';
 import { UserMapper } from './user.mapper';
-import type { UsersQueryDto } from './dto/users-query.dto';
+import { UsersQueryDto } from './dto/users-query.dto';
 import { UsersResponseDto } from './dto/users-response.dto';
 import { PageMetaDto } from '../../common/dto/page-meta.dto';
+import { AdminCreateUserDto } from './dto/admin-create-user.dto';
+import type { CreateUserDto } from './dto/create-user.dto';
 
 
 @Injectable()
@@ -20,6 +21,7 @@ export class UserService {
     private readonly logger: Logger,
   ) {}
 
+  //Публічний метод створення користувача. Викликається в модулі auth з подальшим автологіном
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
     const passwordHash: string = await bcrypt.hash(dto.password, 10);
 
@@ -29,7 +31,24 @@ export class UserService {
     );
 
     const user: UserEntity = await this.prismaService.user.create({ data });
-    this.logger.log('User created');
+    this.logger.log(`Користувача з id ${user.id} успішно створено`);
+
+    const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
+
+    return responseDto;
+  }
+
+  //Метод для створення користувача адміном. Викликається в модулі user, бо ніякого автологіну не потрібно
+  async createForAdmin(dto: AdminCreateUserDto): Promise<UserResponseDto> {
+    const passwordHash: string = await bcrypt.hash(dto.password, 10);
+
+    const data: Prisma.UserCreateInput = UserMapper.toCreateInputForAdmin(
+      dto,
+      passwordHash,
+    );
+
+    const user: UserEntity = await this.prismaService.user.create({ data });
+    this.logger.log(`Користувача з id ${user.id} успішно створено`);
 
     const responseDto: UserResponseDto = UserMapper.toResponseDto(user);
 
@@ -48,12 +67,14 @@ export class UserService {
           [sortBy]: sortOrder,
         },
         take: pageSize,
-        skip: pageNo * pageSize
+        skip: pageNo * pageSize,
       }),
       this.prismaService.user.count({ where }),
     ]);
 
-    const data: UserResponseDto[] = userEntities.map((user) => UserMapper.toResponseDto(user),);
+    const data: UserResponseDto[] = userEntities.map((user) =>
+      UserMapper.toResponseDto(user),
+    );
     const meta: PageMetaDto = new PageMetaDto(pageNo, pageSize, totalElements);
 
     const responseDto: UsersResponseDto = new UsersResponseDto(data, meta);
@@ -63,7 +84,7 @@ export class UserService {
 
   async findOne(id: string): Promise<UserResponseDto> {
     const user: UserEntity | null = await this.prismaService.user.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!user) {
@@ -80,7 +101,7 @@ export class UserService {
 
     const updatedUser: UserEntity = await this.prismaService.user.update({
       where: { id },
-      data
+      data,
     });
 
     const responseDto: UserResponseDto = UserMapper.toResponseDto(updatedUser);
@@ -109,7 +130,7 @@ export class UserService {
     let user: UserEntity | null = await this.findByEmail(email);
     if (!user) {
       user = await this.prismaService.user.create({
-        data: { email }
+        data: { email },
       });
     }
     const responseDto = UserMapper.toResponseDto(user);
@@ -117,7 +138,9 @@ export class UserService {
   }
 
   private async findByEmail(email: string): Promise<UserEntity | null> {
-    const user: UserEntity | null = await this.prismaService.user.findUnique({ where: { email } });
+    const user: UserEntity | null = await this.prismaService.user.findUnique({
+      where: { email },
+    });
 
     return user;
   }

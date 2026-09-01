@@ -58,7 +58,7 @@ export class CategoryService {
 
   async remove(id: string): Promise<CategoryResponseDto> {
     const products: ProductResponseDto[] =
-      await this.productService.findProductsByCategoryId(id);
+      await this.productService.findManyByCategoryId(id);
 
     //Перевіряєм чи є книги, які мають лише цю категорію
     const notRemovedProducts: ProductResponseDto[] = products.filter((product) => product.categories.length === 1);

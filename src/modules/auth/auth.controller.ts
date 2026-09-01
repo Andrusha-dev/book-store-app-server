@@ -18,8 +18,9 @@ import type { IOAuthUser } from './types/oauth-user.interface';
 import { ConfigService } from '@nestjs/config';
 import type { AppConfig } from '../../core/config/app-config.schema';
 import { OAuthUser } from './decorators/oauth-user.decorator';
-import { Logger } from 'nestjs-pino';
 import { ApiErrors } from '../../common/decorators/api-errors.decorator';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+
 
 
 @Controller('auth')
@@ -27,12 +28,24 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService<AppConfig, true>,
-    private readonly logger: Logger
   ) {}
+
+  //Публічний маршрут для реєстрації користувача з автологіном
+  @Post('register')
+  @ApiErrors()
+  async register(
+    @Body() dto: CreateUserDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponseDto> {
+    const { accessToken, refreshToken } = await this.authService.register(dto);
+
+    this.setRefreshTokenCookie(res, refreshToken);
+
+    return { accessToken }; // Повертаємо клієнту тільки Access Token!
+  }
 
   //автентифікація через email + password
   @Post('login-with-credentials')
-
   @ApiErrors()
   async loginWithCredentials(
     @Body() dto: LoginDto,
@@ -42,17 +55,16 @@ export class AuthController {
 
     this.setRefreshTokenCookie(res, refreshToken);
 
-    return { accessToken }; // Повертаємо клієнту тільки Access Token!
+    return { accessToken } // Повертаємо клієнту тільки Access Token!
   }
 
   //OAuth автентифікація через сервіс google
-  // 1. Ініціація входу (перенаправляє на Google)
+  //1. Ініціація входу (перенаправляє на Google)
   @Get('google')
   @UseGuards(GoogleAuthGuard)
-  googleAuth() {
-    // Порожній метод — GoogleAuthGuard сам зробить redirect на Google
-  }
-  // 2. Callback від Google (сюди повертається користувач)
+  googleAuth() {} // Порожній метод — GoogleAuthGuard сам зробить redirect на Google
+
+  //2. Callback від Google (сюди повертається користувач)
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard) //Гарда, яка використовуючи GoogleStrategy, кладе отримані дані від сервісу Google в req.user
   async googleAuthCallback(

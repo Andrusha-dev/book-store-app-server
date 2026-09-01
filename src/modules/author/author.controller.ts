@@ -13,12 +13,7 @@ import { AuthorsQueryDto } from './dto/authors-query.dto';
 export class AuthorController {
   constructor(private readonly authorService: AuthorService) {}
 
-  @Post()
-  @Auth("ADMIN")
-  @ApiErrors()
-  async create(@Body() dto: CreateAuthorDto): Promise<AuthorResponseDto> {
-    return await this.authorService.create(dto);
-  }
+
 
   @Get()
   @ApiErrors()
@@ -30,22 +25,5 @@ export class AuthorController {
   @ApiErrors()
   async findOne(@Param('id') id: string): Promise<AuthorResponseDto> {
     return await this.authorService.findOne(id)
-  }
-
-  @Patch(':id')
-  @Auth("ADMIN")
-  @ApiErrors()
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateAuthorDto
-  ): Promise<AuthorResponseDto> {
-    return await this.authorService.update(id, dto);
-  }
-
-  @Delete(':id')
-  @Auth("ADMIN")
-  @ApiErrors()
-  async remove(@Param('id') id: string): Promise<AuthorResponseDto> {
-    return await this.authorService.remove(id);
   }
 }

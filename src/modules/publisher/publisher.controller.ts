@@ -12,40 +12,9 @@ import { PublishersQueryDto } from './dto/publishers-query.dto';
 export class PublisherController {
   constructor(private readonly publisherService: PublisherService) {}
 
-  @Post()
-  @Auth("ADMIN")
-  @ApiErrors()
-  async create(@Body() dto: CreatePublisherDto): Promise<PublisherResponseDto> {
-    return await this.publisherService.create(dto);
-  }
-
   @Get()
   @ApiErrors()
   async findMany(@Query() queryDto: PublishersQueryDto): Promise<PublishersResponseDto> {
     return await this.publisherService.findMany(queryDto);
-  }
-
-  @Get(':id')
-  @Auth("ADMIN")
-  @ApiErrors()
-  async findOne(@Param('id') id: string):Promise<PublisherResponseDto> {
-    return await this.publisherService.findOne(id);
-  }
-
-  @Patch(':id')
-  @Auth("ADMIN")
-  @ApiErrors()
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdatePublisherDto
-  ): Promise<PublisherResponseDto> {
-    return await this.publisherService.update(id, dto);
-  }
-
-  @Delete(':id')
-  @Auth("ADMIN")
-  @ApiErrors()
-  async remove(@Param('id') id: string): Promise<PublisherResponseDto> {
-    return await this.publisherService.remove(id);
   }
 }

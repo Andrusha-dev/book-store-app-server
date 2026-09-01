@@ -1,9 +1,11 @@
 import { CoverType } from '../../../generated/prisma/enums';
 import {
+  ArrayMinSize,
   IsArray,
   IsEnum,
   IsInt,
   IsISBN,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -24,17 +26,20 @@ export class CreateProductDto {
 
   @IsNumber(
     { maxDecimalPlaces: 2 },
-    { message: 'Поле має бути числом (з двома розрядами після плаваючої точки)'},
+    {
+      message: 'Поле має бути числом (з двома розрядами після плаваючої точки)',
+    },
   )
   @Min(0, { message: 'Поле не може бути менше 0' })
   price: number;
 
   @IsString({ message: 'Поле має бути рядком' })
+  @IsNotEmpty()
   @IsOptional()
   description?: string;
 
   @IsInt({ message: 'Поле має бути цілим числом' })
-  @Min(0, {message: "Поле не може бути менше 0"})
+  @Min(0, { message: 'Поле не може бути менше 0' })
   quantity: number;
 
   @IsInt({ message: 'Поле має бути цілим числом' })
@@ -64,12 +69,12 @@ export class CreateProductDto {
   coverType: CoverType;
 
   @IsString({ message: 'Поле має бути рядком' })
-  @MinLength(2, {message: "Поле має містити щонайменше два символи"})
+  @MinLength(2, { message: 'Поле має містити щонайменше два символи' })
   language: string;
 
   @IsArray({ message: 'categoryIds має бути масивом' })
+  @ArrayMinSize(1, { message: 'Товар повинен мати щонайменше одну категорію' })
   @IsUUID('all', { each: true, message: 'Кожен ID категорії має бути UUID' })
-  @IsOptional()
   categoryIds: string[];
 
   @IsUUID('all', { message: 'Поле має бути коректним UUID' })

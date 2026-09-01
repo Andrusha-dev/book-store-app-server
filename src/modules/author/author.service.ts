@@ -77,7 +77,7 @@ export class AuthorService {
 
   //Метод для видалення автора, якщо книга не була виставлена на продаж (мала виключно статус DRAFT), інакше автора видаляти не можна
   async remove(id: string): Promise<AuthorResponseDto> {
-    const products = await this.productService.findProductsByAuthorId(id);
+    const products = await this.productService.findManyByAuthorId(id);
 
     //Перевіряєм чи є книги цього автора, які мають статус, відмінний від DRAFT
     const notRemovedProducts = products.filter(product => product.status !== 'DRAFT');

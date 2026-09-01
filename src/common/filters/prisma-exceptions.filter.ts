@@ -24,9 +24,24 @@ export class PrismaExceptionsFilter implements ExceptionFilter {
       // Помилка унікальності (наприклад, дублікат email або унікального поля)
       case 'P2002': {
         statusCode = HttpStatus.CONFLICT;
+
+
+        const index = exception.message.indexOf("fields:");
+
+        const field = index !== -1
+          ? exception.message.substring(index)
+          : "field";
+
+        message = `${field} with this value already exists`
+
+        break;
+
+        /*
+        statusCode = HttpStatus.CONFLICT;
         const target = (exception.meta?.target as string[])?.join(', ') || 'field';
         message = `A record with this ${target} already exists.`;
         break;
+        */
       }
 
       // Запис не знайдено (наприклад, при спробі оновити або видалити неіснуючий id)
