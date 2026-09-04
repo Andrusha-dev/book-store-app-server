@@ -130,7 +130,12 @@ export class UserService {
     let user: UserEntity | null = await this.findByEmail(email);
     if (!user) {
       user = await this.prismaService.user.create({
-        data: { email },
+        data: {
+          email,
+          cart: {
+            create: {}
+          }
+        },
       });
     }
     const responseDto = UserMapper.toResponseDto(user);

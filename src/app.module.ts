@@ -15,12 +15,13 @@ import { ProductModule } from './modules/product/product.module';
 import { CategoryModule } from './modules/category/category.module';
 import { AuthorModule } from './modules/author/author.module';
 import { PublisherModule } from './modules/publisher/publisher.module';
+import { CartModule } from './modules/cart/cart.module';
 
 
 
 
 @Module({
-  imports: [CoreModule, UserModule, AuthModule, ProductModule, CategoryModule, AuthorModule, PublisherModule],
+  imports: [CoreModule, UserModule, AuthModule, ProductModule, CategoryModule, AuthorModule, PublisherModule, CartModule],
   controllers: [AppController],
   providers: [
     AppService,

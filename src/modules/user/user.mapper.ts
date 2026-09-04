@@ -8,7 +8,7 @@ import {
 import { Prisma } from '../../generated/prisma/client';
 import { UsersQueryDto } from './dto/users-query.dto';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
-import type { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 
 
 
@@ -24,7 +24,12 @@ export class UserMapper {
       phone: restData.phone,
       birthYear: restData.birthYear,
       isMarried: restData.isMarried,
+      //вказуєм passwordHash
       passwordHash,
+      //Створюєм кошик через реляцію
+      cart: {
+        create: {}
+      }
     };
 
     return data;

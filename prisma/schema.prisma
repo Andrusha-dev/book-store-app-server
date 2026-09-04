@@ -6,7 +6,7 @@
 generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
-  moduleFormat = "cjs"
+  moduleFormat = "cjs" //Потрібен для nest, щоб tsc міг правильно зкомпілювати клієнт Prisma
 }
 
 datasource db {
@@ -33,6 +33,8 @@ model User {
   updatedAt    DateTime @updatedAt
 
   identities Identity[]
+  //При one to one @relation() вказувати не потрібно, бо вона вже вказана в моделі User.
+  cart       Cart? //Поле карт опціональне, щоб не викликати конфлікту при одночасному створенні запису в User та Cart
 }
 
 // Перелік провайдерів для автентифікації
@@ -86,11 +88,12 @@ model Product {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  categories  Category[]
+  categories  Category[] //many to many
   authorId    String
   author      Author     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   publisherId String
   publisher   Publisher  @relation(fields: [publisherId], references: [id], onDelete: Cascade)
+  cartItems   CartItem[]
 }
 
 model Category {
@@ -99,7 +102,7 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  products Product[]
+  products Product[] //many to many
 }
 
 model Author {
@@ -120,4 +123,28 @@ model Publisher {
   updatedAt DateTime @updatedAt
 
   products Product[]
+}
+
+model Cart {
+  id        String   @id @default(uuid(7))
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String     @unique
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid(7))
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
 }

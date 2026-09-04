@@ -1,4 +1,7 @@
-import type { ProductEntity } from './entities/product.entity';
+import type {
+  ProductBaseEntity,
+  ProductEntity,
+} from './entities/product.entity';
 import type { ProductResponseDto } from './dto/product-response.dto';
 import { CoverType, ProductStatus } from '../../generated/prisma/enums';
 import type { CategoryResponseDto } from '../category/dto/category-response.dto';
@@ -12,6 +15,7 @@ import { Prisma } from '../../generated/prisma/client';
 import { ProductsQueryDto } from './dto/products-query.dto';
 import { AdminProductsQueryDto } from './dto/admin-products-query.dto';
 import type { UpdateProductDto } from './dto/update-product.dto';
+import type { ProductBaseResponseDto } from './dto/product-base-response.dto';
 
 
 export class ProductMapper {
@@ -136,8 +140,8 @@ export class ProductMapper {
     */
   }
 
-  static toResponseDto(product: ProductEntity): ProductResponseDto {
-    const responseDto: ProductResponseDto = {
+  static toBaseResponseDto(product: ProductBaseEntity): ProductBaseResponseDto {
+    const baseResponseDto: ProductBaseResponseDto = {
       id: product.id,
       name: product.name,
       imgUrls: product.imgUrls,
@@ -156,7 +160,17 @@ export class ProductMapper {
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
       authorId: product.authorId,
-      publisherId: product.publisherId,
+      publisherId: product.publisherId
+    };
+
+    return baseResponseDto;
+  }
+
+  static toResponseDto(product: ProductEntity): ProductResponseDto {
+    const baseResponseDto: ProductBaseResponseDto = ProductMapper.toBaseResponseDto(product);
+
+    const responseDto: ProductResponseDto = {
+      ...baseResponseDto,
       categories: product.categories.map(category => CategoryMapper.toResponseDto(category)),
       author: AuthorMapper.toResponseDto(product.author),
       publisher: PublisherMapper.toResponseDto(product.publisher)

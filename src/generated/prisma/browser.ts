@@ -47,3 +47,13 @@ export type Author = Prisma.AuthorModel
  * 
  */
 export type Publisher = Prisma.PublisherModel
+/**
+ * Model Cart
+ * 
+ */
+export type Cart = Prisma.CartModel
+/**
+ * Model CartItem
+ * 
+ */
+export type CartItem = Prisma.CartItemModel

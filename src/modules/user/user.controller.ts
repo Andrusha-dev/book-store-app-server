@@ -31,10 +31,8 @@ export class UserController {
   @Auth()
   @ApiErrors()
   async findMe(@CurrentUser() user: ITokenPayload): Promise<UserResponseDto> {
-    const responseDto: UserResponseDto = await this.userService.findOne(
-      user.id,
-    );
-    return responseDto;
+    return await this.userService.findOne(user.id);
+
   }
 
   @Patch('me')
