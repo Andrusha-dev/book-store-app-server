@@ -7,6 +7,7 @@ import { Auth } from '../../common/decorators/auth.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { ITokenPayload } from '../../common/types/token-payload.interface';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
+import { MergeCartDto } from './dto/merge-cart.dto';
 
 @Controller('cart')
 export class CartController {
@@ -26,16 +27,44 @@ export class CartController {
     @Body() dto: CreateCartItemDto,
     @CurrentUser() user: ITokenPayload
   ): Promise<CartResponseDto> {
-    return await this.cartService.createItemOrIncreaseQuantity(user.id, dto);
+    return await this.cartService.createItem(user.id, dto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCartDto: UpdateCartItemDto) {
-    return this.cartService.update(+id, updateCartDto);
+  @Patch('items/:id')
+  @Auth()
+  @ApiErrors()
+  async updateItemQuantity(
+    @Param('id') id: string,
+    @Body() dto: UpdateCartItemDto,
+    @CurrentUser() user: ITokenPayload
+  ): Promise<CartResponseDto> {
+    return await this.cartService.updateItemQuantity(user.id, id, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cartService.remove(+id);
+  @Delete('items/:id')
+  @Auth()
+  @ApiErrors()
+  async removeItem(
+    @Param('id') id: string,
+    @CurrentUser() user: ITokenPayload
+  ): Promise<CartResponseDto> {
+    return await this.cartService.removeItem(user.id, id);
+  }
+
+  @Delete('items')
+  @Auth()
+  @ApiErrors()
+  async clear(@CurrentUser() user: ITokenPayload): Promise<CartResponseDto> {
+    return await this.cartService.clear(user.id);
+  }
+
+  @Post('merge')
+  @Auth()
+  @ApiErrors()
+  async merge(
+    @CurrentUser() user: ITokenPayload,
+    @Body() dto: MergeCartDto
+  ): Promise<CartResponseDto> {
+    return await this.cartService.merge(user.id, dto);
   }
 }

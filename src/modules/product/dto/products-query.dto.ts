@@ -49,12 +49,14 @@ export class ProductsQueryDto extends PageQueryDto {
   @IsOptional()
   readonly maxPrice?: number;
 
+  //Повертає масив, якщо дані фільтра вже є масивом, або створю масив, якщо фільтр має єдине значення
   @Transform(({ value }) => (Array.isArray(value) ? value : [value]) as unknown[],)
   @IsArray({ message: 'Поле "Тип обкладинки" має бути масивом' })
   @IsEnum(CoverType, { each: true, message: 'Перелік значень "тип обкладинки" не відповідає допустимим значенням', })
   @IsOptional()
   readonly coverTypes?: CoverType[];
 
+  //Повертає масив, якщо дані фільтра вже є масивом, або створю масив, якщо фільтр має єдине значення
   @Transform(({ value }) => (Array.isArray(value) ? value : [value]) as unknown[],)
   @IsArray({ message: 'Поле "мова" має бути масивом' })
   @IsString({ each: true, message: 'Перелік значень "мова" має містити рядки' })

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { PrismaService } from '../../core/database/prisma.service';
 import type { CartResponseDto } from './dto/cart-response.dto';
@@ -11,7 +11,8 @@ import {
 import { CartMapper } from './cart.mapper';
 import { Prisma } from '../../generated/prisma/client';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
-import type { ProductService } from '../product/product.service';
+import { ProductService } from '../product/product.service';
+import { MergeCartDto } from './dto/merge-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -94,7 +95,57 @@ export class CartService {
     return CartMapper.toCartResponseDto(updatedCart);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cart`;
+  async removeItem(userId: string, cartItemId: string): Promise<CartResponseDto> {
+    const cart: CartEntity = await this.prismaService.cart.findUniqueOrThrow({
+      where: { userId },
+      include: cartInclude,
+    });
+
+    const cartItem: CartItemEntity | undefined = cart.items.find(item => item.id === cartItemId);
+    if(!cartItem) {
+      throw new NotFoundException(`В кошику відсутній запис з id ${cartItemId}`);
+    }
+
+    //Видаляємо CartItem через вкладеність, виконавши лише один запит
+    const updatedCart: CartEntity = await this.prismaService.cart.update({
+      where: {userId},
+      data: {
+        items: {
+          delete: {id: cartItemId}
+        }
+      },
+      include: cartInclude
+    });
+
+    return CartMapper.toCartResponseDto(updatedCart);
+  }
+
+  //Метод для очистки кошика
+  async clear(userId: string): Promise<CartResponseDto> {
+    //Очищуємо Cart через вкладеність, виконавши лише один запит
+    const updatedCart: CartEntity = await this.prismaService.cart.update({
+      where: {userId},
+      data: {
+        items: {
+          deleteMany: {}
+        }
+      },
+      include: cartInclude
+    });
+
+    return CartMapper.toCartResponseDto(updatedCart);
+  }
+
+  //Метод злиття локального кошика клієнта з кошиком в бд
+  async merge(userId: string, dto: MergeCartDto): Promise<CartResponseDto> {
+    /*
+    for (const item of dto.items) {
+      await this.createItem(userId, item);
+    }
+    */
+    //Якщо товар вже знаходиться в кошику бд, то він не буде змінений
+    await Promise.all(dto.items.map(item => this.createItem(userId, item)));
+
+    return await this.findOneByUserId(userId);
   }
 }
