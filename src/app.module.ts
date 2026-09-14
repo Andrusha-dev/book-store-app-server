@@ -16,12 +16,15 @@ import { CategoryModule } from './modules/category/category.module';
 import { AuthorModule } from './modules/author/author.module';
 import { PublisherModule } from './modules/publisher/publisher.module';
 import { CartModule } from './modules/cart/cart.module';
+import { OrderModule } from './modules/order/order.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { DeliveryModule } from './modules/delivery/delivery.module';
 
 
 
 
 @Module({
-  imports: [CoreModule, UserModule, AuthModule, ProductModule, CategoryModule, AuthorModule, PublisherModule, CartModule],
+  imports: [CoreModule, UserModule, AuthModule, ProductModule, CategoryModule, AuthorModule, PublisherModule, CartModule, OrderModule, PaymentModule, DeliveryModule],
   controllers: [AppController],
   providers: [
     AppService,

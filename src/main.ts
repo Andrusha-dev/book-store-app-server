@@ -12,6 +12,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true, //Накопичує логи доки не завантажиться кастомний логер (pino)
     forceCloseConnections: true, //Примусово закриває зєднання, якщо enableShutdownHooks не справляється
+    rawBody: true, // Зберігає сире тіло запиту. Потрібно зокрема для криптографічної перевірки підпису вебхуків
   });
 
   //Отримуєм залежності
@@ -29,7 +30,7 @@ async function bootstrap() {
   //Підключаєм вбудований cors
   app.enableCors({
     origin: configService.get('ALLOWED_ORIGIN', {infer: true}),
-    credentials: true, //Обов'язково для передачі Refresh Cookie!
+    credentials: true, //Обов'язково для передачі Refresh Cookie
   });
   //Встановлюємо глобальний префікс маршрутів для версіонування API
   app.setGlobalPrefix('api/v1');
@@ -45,11 +46,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   // Перший аргумент 'api/docs' — це URL шлях, за яким буде доступний Swagger UI
   SwaggerModule.setup('api/v1/docs', app, document);
-  logger.log(
-    `Swagger documentation is available on: http://localhost:${port}/api/docs`,
-  );
+  logger.log(`Swagger documentation is available on: http://localhost:${port}/api/docs`);
 
   await app.listen(port);
-  logger.log(`🚀 Bookstore API is running on: http://localhost:${port}/api/v1`);
+  logger.log(`Bookstore API is running on: http://localhost:${port}/api/v1`);
 }
 bootstrap();

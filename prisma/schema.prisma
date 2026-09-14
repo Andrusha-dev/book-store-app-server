@@ -35,6 +35,7 @@ model User {
   identities Identity[]
   //При one to one @relation() вказувати не потрібно, бо вона вже вказана в моделі User.
   cart       Cart? //Поле карт опціональне, щоб не викликати конфлікту при одночасному створенні запису в User та Cart
+  orders     Order[]
 }
 
 // Перелік провайдерів для автентифікації
@@ -90,10 +91,11 @@ model Product {
 
   categories  Category[] //many to many
   authorId    String
-  author      Author     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author      Author      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   publisherId String
-  publisher   Publisher  @relation(fields: [publisherId], references: [id], onDelete: Cascade)
+  publisher   Publisher   @relation(fields: [publisherId], references: [id], onDelete: Cascade)
   cartItems   CartItem[]
+  orderItems  OrderItem[]
 }
 
 model Category {
@@ -147,4 +149,93 @@ model CartItem {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([cartId, productId])
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  DELIVERING
+  COMPLETED
+  CANCELLED //Скасування замовлення
+}
+
+enum OrderPaymentMethod {
+  CARD
+  CASH
+}
+
+model Order {
+  id            String             @id @default(uuid(7))
+  amount        Decimal            @db.Decimal(10, 2)
+  status        OrderStatus        @default(PENDING)
+  paymentMethod OrderPaymentMethod
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  items    OrderItem[]
+  userId   String
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments Payment[]
+  delivery Delivery?
+}
+
+model OrderItem {
+  id        String   @id @default(uuid(7))
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id         String        @id @default(uuid(7))
+  status     PaymentStatus @default(PENDING)
+  externalId String        @unique //ID інвойсу в платіжній системі
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+/**
+ * //Знадобиться, коли окрім нової пошти зявиться ще укрпошта
+ * enum DeliveryProvider {
+ * NOVA_POSHTA
+ * UKRPOSHTA
+ * }
+ */
+
+enum DeliveryMethod {
+  WAREHOUSE // Відділення
+  POSTOMAT // Поштомат
+}
+
+model Delivery {
+  id                String         @id @default(uuid(7))
+  method            DeliveryMethod
+  recipientFullname String
+  recipientPhone    String
+  cityName          String
+  cityRef           String //UUID міста в API Нової Пошти / Укрпошти (для автоматичного створення ТТН)
+  warehouseName     String //Наприклад: "Відділення №15 (до 30 кг)"
+  warehouseRef      String //UUID відділення/поштомату в API служби доставки
+  trackingNumber    String? //Номер ТТН
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  orderId String @unique // Зв'язок 1-до-1 з Order
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }

@@ -18,21 +18,11 @@ import { ApiErrors } from '../../common/decorators/api-errors.decorator';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  /*
-  @Post()
-  @ApiErrors()
-  async create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
-    const responseDto: UserResponseDto = await this.userService.create(dto);
-    return responseDto;
-  }
-  */
-
   @Get('me')
   @Auth()
   @ApiErrors()
   async findMe(@CurrentUser() user: ITokenPayload): Promise<UserResponseDto> {
     return await this.userService.findOne(user.id);
-
   }
 
   @Patch('me')

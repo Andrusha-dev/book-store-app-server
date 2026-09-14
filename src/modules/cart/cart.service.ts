@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { PrismaService } from '../../core/database/prisma.service';
 import type { CartResponseDto } from './dto/cart-response.dto';
@@ -6,7 +6,6 @@ import {
   type CartEntity,
   cartInclude,
   type CartItemEntity,
-  cartItemInclude,
 } from './entities/cart.entity';
 import { CartMapper } from './cart.mapper';
 import { Prisma } from '../../generated/prisma/client';
@@ -21,8 +20,10 @@ export class CartService {
     private readonly productService: ProductService
   ) {}
 
-  async findOneByUserId(userId: string): Promise<CartResponseDto> {
-    const cart: CartEntity | null = await this.prismaService.cart.findUnique({
+  async findOneByUserId(userId: string, tx?: Prisma.TransactionClient): Promise<CartResponseDto> {
+    const dbClient = tx ?? this.prismaService;
+
+    const cart: CartEntity | null = await dbClient.cart.findUnique({
       where: {userId},
       include: cartInclude
     });
@@ -138,13 +139,10 @@ export class CartService {
 
   //Метод злиття локального кошика клієнта з кошиком в бд
   async merge(userId: string, dto: MergeCartDto): Promise<CartResponseDto> {
-    /*
+    //Якщо товар вже знаходиться в кошику бд, то він не буде змінений
     for (const item of dto.items) {
       await this.createItem(userId, item);
     }
-    */
-    //Якщо товар вже знаходиться в кошику бд, то він не буде змінений
-    await Promise.all(dto.items.map(item => this.createItem(userId, item)));
 
     return await this.findOneByUserId(userId);
   }

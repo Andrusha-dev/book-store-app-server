@@ -14,9 +14,7 @@ export const OAuthUser = createParamDecorator(
 
     // Захист, якщо гарда автентифікації не була викликана: перевірка у рантаймі
     if (!user) {
-      throw new InternalServerErrorException(
-        'OAuthUser decorator used without necessary AuthGuard (GoogleAuthGuard, GithubAuthGuard or else)',
-      );
+      throw new InternalServerErrorException('OAuthUser decorator used without necessary AuthGuard (GoogleAuthGuard, GithubAuthGuard or else)',);
     }
 
     return data ? user[data] : user;

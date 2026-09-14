@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
-import { type ProductEntity, productInclude } from './entities/product.entity';
+import {
+  type ProductBaseEntity,
+  type ProductEntity,
+  productInclude,
+} from './entities/product.entity';
 import { PrismaService } from '../../core/database/prisma.service';
 import { Logger } from 'nestjs-pino';
 import { ProductMapper } from './product.mapper';
@@ -178,5 +186,39 @@ export class ProductService {
     });
 
     return ProductMapper.toResponseDto(product);
+  }
+
+  //Метод для зменшення кількості товару (наприклад, при оформленні замолення)
+  async decreaseQuantity(id: string, quantity: number, tx?: Prisma.TransactionClient): Promise<ProductResponseDto> {
+    const dbClient = tx ?? this.prismaService;
+
+    const product: ProductBaseEntity = await dbClient.product.findUniqueOrThrow({ where: {id} });
+
+    if(product.quantity < quantity) {
+      throw new BadRequestException(`В замовленні вказано ${quantity} шт. товару з id ${id}. Але в наявності є ${product.quantity} шт.`,);
+    }
+
+    const updatedProduct: ProductEntity = await dbClient.product.update({
+      where: {id},
+      data: {quantity: {decrement: quantity}},
+      include: productInclude
+    });
+
+    return ProductMapper.toResponseDto(updatedProduct);
+  }
+
+  //Метод для збільшення кількості товару (наприклад, при скасуванні замовлення)
+  async increaseQuantity(id: string, quantity: number, tx?: Prisma.TransactionClient): Promise<ProductResponseDto> {
+    const dbClient = tx ?? this.prismaService;
+
+    const updatedProduct: ProductEntity = await dbClient.product.update({
+      where: {id},
+      data: {
+        quantity: {increment: quantity}
+      },
+      include: productInclude
+    });
+
+    return ProductMapper.toResponseDto(updatedProduct);
   }
 }
