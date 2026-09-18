@@ -231,7 +231,8 @@ export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeo
 export const DeliveryScalarFieldEnum = {
   id: 'id',
   method: 'method',
-  recipientFullname: 'recipientFullname',
+  recipientFirstname: 'recipientFirstname',
+  recipientLastname: 'recipientLastname',
   recipientPhone: 'recipientPhone',
   cityName: 'cityName',
   cityRef: 'cityRef',

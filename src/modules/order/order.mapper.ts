@@ -1,8 +1,7 @@
 import type { CreateOrderDto } from './dto/create-order.dto';
 import { DeliveryMethod, type OrderPaymentMethod, type OrderStatus, Prisma } from '../../generated/prisma/client';
 import type { CartItemResponseDto } from '../cart/dto/cart-Item-response.dto';
-import type { CreateDeliveryInput } from '../delivery/delivery.contracts';
-import type { OrderEntity, OrderItemEntity } from './entities/order.entity';
+import { OrderEntity, OrderItemEntity } from './entities/order.entity';
 import type { OrderResponseDto } from './dto/order-response.dto';
 import type { DeliveryResponseDto } from '../delivery/dto/delivery-response.dto';
 import { PaymentResponseDto } from '../payment/dto/payment-response.dto';
@@ -12,10 +11,12 @@ import { ProductMapper } from '../product/product.mapper';
 import { DeliveryMapper } from '../delivery/delivery.mapper';
 import { PaymentMapper } from '../payment/payment.mapper';
 import type { CheckoutResponseDto } from './dto/checkout-response.dto';
+import type { CartResponseDto } from '../cart/dto/cart-response.dto';
+import type { SetTrackingNumberDto } from '../delivery/dto/set-tracking-number.dto';
 
 
 export class OrderMapper {
-  static toPrismaOrderItemCreateInput(cartItem: CartItemResponseDto): Prisma.OrderItemCreateWithoutOrderInput {
+  private static toPrismaOrderItemCreateInput(cartItem: CartItemResponseDto): Prisma.OrderItemCreateWithoutOrderInput {
     const data: Prisma.OrderItemCreateWithoutOrderInput = {
       quantity: cartItem.quantity,
       price: cartItem.product.price * cartItem.quantity,
@@ -27,46 +28,71 @@ export class OrderMapper {
     return data;
   }
 
-  static toPrismaDeliveryCreateInput(dto: CreateOrderDto): Prisma.DeliveryCreateWithoutOrderInput {
-    const data: Prisma.DeliveryCreateWithoutOrderInput = {
-      method: dto.delivery.method,
-      recipientFullname: dto.delivery.recipientFullname,
-      recipientPhone: dto.delivery.recipientPhone,
-      cityName: dto.delivery.cityName,
-      cityRef: dto.delivery.cityRef,
-      warehouseName: dto.delivery.warehouseName,
-      warehouseRef: dto.delivery.warehouseRef
-    }
-
-    return data;
-  }
-
   static toPrismaOrderCreateInput(
     userId: string,
-    amount: number,
-    paymentMethod: OrderPaymentMethod,
-    items: Prisma.OrderItemCreateWithoutOrderInput[],
-    delivery: Prisma.DeliveryCreateWithoutOrderInput
+    cart: CartResponseDto,
+    dto: CreateOrderDto
   ): Prisma.OrderCreateInput {
+    //Створюємо OrderItemCreateWithoutOrderInput[]
+    const items = cart.items.map((item) =>
+      OrderMapper.toPrismaOrderItemCreateInput(item),
+    );
+
+    //Підраховуємо загальну суму замовлення
+    const amount = items.reduce((acc, item) => {
+      return acc + Number(item.price);
+    }, 0);
+
+    //Створюємо DeliveryCreateWithoutOrderInput
+    const delivery = DeliveryMapper.toDeliveryCreateWithoutOrderInput(dto.delivery);
+
     const data: Prisma.OrderCreateInput = {
       amount,
-      paymentMethod,
-      status: paymentMethod === "CASH" ? "PROCESSING" : "PENDING",
+      paymentMethod: dto.paymentMethod,
       user: {
-        connect: {id: userId}
+        connect: { id: userId },
       },
       items: {
-        create: items
+        create: items,
       },
       delivery: {
-        create: delivery
-      }
-    }
+        create: delivery,
+      },
+    };
 
     return data;
   }
 
-  static toOrderItemResponseDto(item: OrderItemEntity): OrderItemResponseDto {
+  //маппер для маппінгу до SetTrackingNumberDto. Генерація ттн ініціюватиметься в OrderService, бо він виступає оркестратором
+  static toSetTrackingNumberDto(order: OrderEntity): SetTrackingNumberDto {
+    const volumeMm3 = order.items.reduce((acc, item) => {
+      return acc + (item.product.widthMm * item.product.heightMm * item.product.depthMm * item.product.quantity);
+    }, 0);
+
+    const weightGrams = order.items.reduce((acc, item) => {
+      return acc + (item.product.weightGrams * item.product.quantity);
+    }, 0)
+
+
+    const dto: SetTrackingNumberDto = {
+      orderId: order.id,
+      paymentMethod: order.paymentMethod,
+      amount: Number(order.amount),
+      recipientFirstname: order.delivery!.recipientFirstname,
+      recipientLastname: order.delivery!.recipientLastname,
+      recipientPhone: order.delivery!.recipientPhone,
+      cityName: order.delivery!.cityName,
+      cityRef: order.delivery!.cityRef,
+      warehouseName: order.delivery!.warehouseName,
+      warehouseRef: order.delivery!.warehouseRef,
+      volumeMm3,
+      weightGrams
+    }
+
+    return dto;
+  }
+
+  private static toOrderItemResponseDto(item: OrderItemEntity): OrderItemResponseDto {
     const responseDto: OrderItemResponseDto = {
       id: item.id,
       quantity: item.quantity,

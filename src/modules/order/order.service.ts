@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from '../../core/database/prisma.service';
 import { Logger } from 'nestjs-pino';
 import type { OrderResponseDto } from './dto/order-response.dto';
@@ -24,6 +23,7 @@ export class OrderService {
     private readonly prismaService: PrismaService,
     private readonly cartService: CartService,
     private readonly productService: ProductService,
+    private readonly deliveryService: DeliveryService,
     private readonly paymentService: PaymentService,
     private readonly logger: Logger
   ) {}
@@ -46,7 +46,7 @@ export class OrderService {
 
     let paymentUrl: string | null = null;
 
-    //Створюємо інвойс та payment. Вони не повинні бути в одній транзакції з order, бо Order має створитись, незалежно від того чи вдалось створити інвойс, чи ні (монобанк впав)
+    //Створюємо інвойс та payment. Це теж не критична транзакція
     if (dto.paymentMethod === 'CARD') {
       const invoiceResponseDto: InvoiceResponseDto = await this.paymentService.initializePayment(createdOrder.id, Number(createdOrder.amount));
       paymentUrl = invoiceResponseDto.paymentUrl;
@@ -55,6 +55,29 @@ export class OrderService {
     return OrderMapper.toCheckoutResponseDto(createdOrder, paymentUrl);
   }
 
+  //Створення ТТН та зміна статусу замовлення на PROCESSING (після оплати або підтвердження менеджером)
+  async initProcessing(orderId: string): Promise<OrderResponseDto> {
+    const order: OrderEntity = await this.prismaService.order.findUniqueOrThrow({
+      where: {id: orderId},
+      include: orderInclude,
+    });
+
+    if(order.status !== "PENDING") {
+      throw new BadRequestException(`Не можливо змінити статус замовлення. Поточний статус ${order.status}`);
+    }
+
+    const setTrackingNumberDto = OrderMapper.toSetTrackingNumberDto(order);
+
+    await this.deliveryService.setTrackingNumber(setTrackingNumberDto);
+
+    const updatedOrder: OrderEntity = await this.prismaService.order.update({
+      where: {id: orderId},
+      data: { status: "PROCESSING" },
+      include: orderInclude
+    });
+
+    return OrderMapper.toOrderResponseDto(updatedOrder);
+  }
 
   findAll() {
     return `This action returns all order`;
@@ -64,9 +87,7 @@ export class OrderService {
     return `This action returns a #${id} order`;
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
+
 
   remove(id: number) {
     return `This action removes a #${id} order`;
@@ -75,20 +96,27 @@ export class OrderService {
   private async create(userId: string, dto: CreateOrderDto, tx: Prisma.TransactionClient): Promise<OrderEntity> {
     const cart = await this.cartService.findOneByUserId(userId, tx);
 
-    //Створюємо Prisma.OrderItemCrerateWithoutOrderInput[] на основі кошика
-    const items = cart.items.map((item) =>
-      OrderMapper.toPrismaOrderItemCreateInput(item)
-    );
+    //Первіряєм чи кошик не пустий
+    if (!cart.items.length) {
+      throw new BadRequestException(`Не можна створити замовлення, оскільки кошик користувача з id ${userId} порожній`);
+    }
 
-    //Підраховуємо загальну суму замовлення
-    const amount = items.reduce((acc, item) => {
-      return acc + Number(item.price);
+    //Розраховуємо довжину замовлення по найбільшій висоті товару
+    const lengthMm = cart.items.reduce((acc, item) => {
+      return acc < item.product.heightMm
+        ? item.product.heightMm
+        : acc
+    }, 0);
+    //Розраховуємо вагу замовлення
+    const weightGrams = cart.items.reduce((acc, item) => {
+      return acc + (item.product.weightGrams * item.product.quantity);
     }, 0);
 
-    const delivery = OrderMapper.toPrismaDeliveryCreateInput(dto);
+    //Перевіряємо відповідність метрик замовлення методу доставки
+    this.deliveryService.verifyOrderMetrics(dto.delivery.method, lengthMm, weightGrams);
 
     //Створюємо Prisma.OrderCreateInput
-    const data: OrderCreateInput = OrderMapper.toPrismaOrderCreateInput(userId, amount, dto.paymentMethod, items, delivery);
+    const data: OrderCreateInput = OrderMapper.toPrismaOrderCreateInput(userId, cart, dto);
 
     //Створюємо замовлення
     const order: OrderEntity = await tx.order.create({

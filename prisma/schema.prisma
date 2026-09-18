@@ -224,17 +224,18 @@ enum DeliveryMethod {
 }
 
 model Delivery {
-  id                String         @id @default(uuid(7))
-  method            DeliveryMethod
-  recipientFullname String
-  recipientPhone    String
-  cityName          String
-  cityRef           String //UUID міста в API Нової Пошти / Укрпошти (для автоматичного створення ТТН)
-  warehouseName     String //Наприклад: "Відділення №15 (до 30 кг)"
-  warehouseRef      String //UUID відділення/поштомату в API служби доставки
-  trackingNumber    String? //Номер ТТН
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  id                 String         @id @default(uuid(7))
+  method             DeliveryMethod
+  recipientFirstname String
+  recipientLastname  String
+  recipientPhone     String
+  cityName           String
+  cityRef            String //UUID міста в API Нової Пошти / Укрпошти (для автоматичного створення ТТН)
+  warehouseName      String //Наприклад: "Відділення №15 (до 30 кг)"
+  warehouseRef       String //UUID відділення/поштомату в API служби доставки
+  trackingNumber     String? //Номер ТТН
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 
   orderId String @unique // Зв'язок 1-до-1 з Order
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)

@@ -6,20 +6,20 @@ import type { PaymentResponseDto } from './dto/payment-response.dto';
 import { Prisma } from '../../generated/prisma/client';
 import { PaymentMapper } from './payment.mapper';
 import type { PaymentEntity } from './entities/payment.entity';
-import type { MonobankService } from './infrastructure/monobank.service';
+import { MonobankProvider } from './infrastructure/monobank.provider';
 import type { InvoiceResponseDto } from './dto/invoice-response.dto';
 
 @Injectable()
 export class PaymentService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly monobankService: MonobankService,
+    private readonly monobankProvider: MonobankProvider,
     private readonly logger: Logger
   ) {}
 
 
   async initializePayment(orderId: string, amount: number): Promise<InvoiceResponseDto> {
-    const output = await this.monobankService.createInvoice(orderId, amount);
+    const output = await this.monobankProvider.createInvoice(orderId, amount);
 
     await this.create(output.invoiceId, orderId);
 
@@ -28,13 +28,13 @@ export class PaymentService {
     }
   }
 
-  private async create(externalId: string, orderId: string): Promise<PaymentResponseDto> {
+  private async create(externalId: string, orderId: string): Promise<PaymentEntity> {
     const data = PaymentMapper.toPrismaCreateInput(externalId, orderId);
 
     const payment: PaymentEntity = await this.prismaService.payment.create({data});
     this.logger.log(`Оплата з id ${payment.id} успішно створена для замовлення з id ${payment.orderId}`);
 
-    return PaymentMapper.toResponseDto(payment);
+    return payment;
   }
 
   findAll() {

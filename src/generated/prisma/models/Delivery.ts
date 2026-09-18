@@ -27,7 +27,8 @@ export type AggregateDelivery = {
 export type DeliveryMinAggregateOutputType = {
   id: string | null
   method: $Enums.DeliveryMethod | null
-  recipientFullname: string | null
+  recipientFirstname: string | null
+  recipientLastname: string | null
   recipientPhone: string | null
   cityName: string | null
   cityRef: string | null
@@ -42,7 +43,8 @@ export type DeliveryMinAggregateOutputType = {
 export type DeliveryMaxAggregateOutputType = {
   id: string | null
   method: $Enums.DeliveryMethod | null
-  recipientFullname: string | null
+  recipientFirstname: string | null
+  recipientLastname: string | null
   recipientPhone: string | null
   cityName: string | null
   cityRef: string | null
@@ -57,7 +59,8 @@ export type DeliveryMaxAggregateOutputType = {
 export type DeliveryCountAggregateOutputType = {
   id: number
   method: number
-  recipientFullname: number
+  recipientFirstname: number
+  recipientLastname: number
   recipientPhone: number
   cityName: number
   cityRef: number
@@ -74,7 +77,8 @@ export type DeliveryCountAggregateOutputType = {
 export type DeliveryMinAggregateInputType = {
   id?: true
   method?: true
-  recipientFullname?: true
+  recipientFirstname?: true
+  recipientLastname?: true
   recipientPhone?: true
   cityName?: true
   cityRef?: true
@@ -89,7 +93,8 @@ export type DeliveryMinAggregateInputType = {
 export type DeliveryMaxAggregateInputType = {
   id?: true
   method?: true
-  recipientFullname?: true
+  recipientFirstname?: true
+  recipientLastname?: true
   recipientPhone?: true
   cityName?: true
   cityRef?: true
@@ -104,7 +109,8 @@ export type DeliveryMaxAggregateInputType = {
 export type DeliveryCountAggregateInputType = {
   id?: true
   method?: true
-  recipientFullname?: true
+  recipientFirstname?: true
+  recipientLastname?: true
   recipientPhone?: true
   cityName?: true
   cityRef?: true
@@ -192,7 +198,8 @@ export type DeliveryGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type DeliveryGroupByOutputType = {
   id: string
   method: $Enums.DeliveryMethod
-  recipientFullname: string
+  recipientFirstname: string
+  recipientLastname: string
   recipientPhone: string
   cityName: string
   cityRef: string
@@ -228,7 +235,8 @@ export type DeliveryWhereInput = {
   NOT?: Prisma.DeliveryWhereInput | Prisma.DeliveryWhereInput[]
   id?: Prisma.StringFilter<"Delivery"> | string
   method?: Prisma.EnumDeliveryMethodFilter<"Delivery"> | $Enums.DeliveryMethod
-  recipientFullname?: Prisma.StringFilter<"Delivery"> | string
+  recipientFirstname?: Prisma.StringFilter<"Delivery"> | string
+  recipientLastname?: Prisma.StringFilter<"Delivery"> | string
   recipientPhone?: Prisma.StringFilter<"Delivery"> | string
   cityName?: Prisma.StringFilter<"Delivery"> | string
   cityRef?: Prisma.StringFilter<"Delivery"> | string
@@ -244,7 +252,8 @@ export type DeliveryWhereInput = {
 export type DeliveryOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   method?: Prisma.SortOrder
-  recipientFullname?: Prisma.SortOrder
+  recipientFirstname?: Prisma.SortOrder
+  recipientLastname?: Prisma.SortOrder
   recipientPhone?: Prisma.SortOrder
   cityName?: Prisma.SortOrder
   cityRef?: Prisma.SortOrder
@@ -264,7 +273,8 @@ export type DeliveryWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.DeliveryWhereInput[]
   NOT?: Prisma.DeliveryWhereInput | Prisma.DeliveryWhereInput[]
   method?: Prisma.EnumDeliveryMethodFilter<"Delivery"> | $Enums.DeliveryMethod
-  recipientFullname?: Prisma.StringFilter<"Delivery"> | string
+  recipientFirstname?: Prisma.StringFilter<"Delivery"> | string
+  recipientLastname?: Prisma.StringFilter<"Delivery"> | string
   recipientPhone?: Prisma.StringFilter<"Delivery"> | string
   cityName?: Prisma.StringFilter<"Delivery"> | string
   cityRef?: Prisma.StringFilter<"Delivery"> | string
@@ -279,7 +289,8 @@ export type DeliveryWhereUniqueInput = Prisma.AtLeast<{
 export type DeliveryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   method?: Prisma.SortOrder
-  recipientFullname?: Prisma.SortOrder
+  recipientFirstname?: Prisma.SortOrder
+  recipientLastname?: Prisma.SortOrder
   recipientPhone?: Prisma.SortOrder
   cityName?: Prisma.SortOrder
   cityRef?: Prisma.SortOrder
@@ -300,7 +311,8 @@ export type DeliveryScalarWhereWithAggregatesInput = {
   NOT?: Prisma.DeliveryScalarWhereWithAggregatesInput | Prisma.DeliveryScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Delivery"> | string
   method?: Prisma.EnumDeliveryMethodWithAggregatesFilter<"Delivery"> | $Enums.DeliveryMethod
-  recipientFullname?: Prisma.StringWithAggregatesFilter<"Delivery"> | string
+  recipientFirstname?: Prisma.StringWithAggregatesFilter<"Delivery"> | string
+  recipientLastname?: Prisma.StringWithAggregatesFilter<"Delivery"> | string
   recipientPhone?: Prisma.StringWithAggregatesFilter<"Delivery"> | string
   cityName?: Prisma.StringWithAggregatesFilter<"Delivery"> | string
   cityRef?: Prisma.StringWithAggregatesFilter<"Delivery"> | string
@@ -315,7 +327,8 @@ export type DeliveryScalarWhereWithAggregatesInput = {
 export type DeliveryCreateInput = {
   id?: string
   method: $Enums.DeliveryMethod
-  recipientFullname: string
+  recipientFirstname: string
+  recipientLastname: string
   recipientPhone: string
   cityName: string
   cityRef: string
@@ -330,7 +343,8 @@ export type DeliveryCreateInput = {
 export type DeliveryUncheckedCreateInput = {
   id?: string
   method: $Enums.DeliveryMethod
-  recipientFullname: string
+  recipientFirstname: string
+  recipientLastname: string
   recipientPhone: string
   cityName: string
   cityRef: string
@@ -345,7 +359,8 @@ export type DeliveryUncheckedCreateInput = {
 export type DeliveryUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod
-  recipientFullname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientFirstname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientLastname?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhone?: Prisma.StringFieldUpdateOperationsInput | string
   cityName?: Prisma.StringFieldUpdateOperationsInput | string
   cityRef?: Prisma.StringFieldUpdateOperationsInput | string
@@ -360,7 +375,8 @@ export type DeliveryUpdateInput = {
 export type DeliveryUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod
-  recipientFullname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientFirstname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientLastname?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhone?: Prisma.StringFieldUpdateOperationsInput | string
   cityName?: Prisma.StringFieldUpdateOperationsInput | string
   cityRef?: Prisma.StringFieldUpdateOperationsInput | string
@@ -375,7 +391,8 @@ export type DeliveryUncheckedUpdateInput = {
 export type DeliveryCreateManyInput = {
   id?: string
   method: $Enums.DeliveryMethod
-  recipientFullname: string
+  recipientFirstname: string
+  recipientLastname: string
   recipientPhone: string
   cityName: string
   cityRef: string
@@ -390,7 +407,8 @@ export type DeliveryCreateManyInput = {
 export type DeliveryUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod
-  recipientFullname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientFirstname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientLastname?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhone?: Prisma.StringFieldUpdateOperationsInput | string
   cityName?: Prisma.StringFieldUpdateOperationsInput | string
   cityRef?: Prisma.StringFieldUpdateOperationsInput | string
@@ -404,7 +422,8 @@ export type DeliveryUpdateManyMutationInput = {
 export type DeliveryUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod
-  recipientFullname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientFirstname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientLastname?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhone?: Prisma.StringFieldUpdateOperationsInput | string
   cityName?: Prisma.StringFieldUpdateOperationsInput | string
   cityRef?: Prisma.StringFieldUpdateOperationsInput | string
@@ -424,7 +443,8 @@ export type DeliveryNullableScalarRelationFilter = {
 export type DeliveryCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   method?: Prisma.SortOrder
-  recipientFullname?: Prisma.SortOrder
+  recipientFirstname?: Prisma.SortOrder
+  recipientLastname?: Prisma.SortOrder
   recipientPhone?: Prisma.SortOrder
   cityName?: Prisma.SortOrder
   cityRef?: Prisma.SortOrder
@@ -439,7 +459,8 @@ export type DeliveryCountOrderByAggregateInput = {
 export type DeliveryMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   method?: Prisma.SortOrder
-  recipientFullname?: Prisma.SortOrder
+  recipientFirstname?: Prisma.SortOrder
+  recipientLastname?: Prisma.SortOrder
   recipientPhone?: Prisma.SortOrder
   cityName?: Prisma.SortOrder
   cityRef?: Prisma.SortOrder
@@ -454,7 +475,8 @@ export type DeliveryMaxOrderByAggregateInput = {
 export type DeliveryMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   method?: Prisma.SortOrder
-  recipientFullname?: Prisma.SortOrder
+  recipientFirstname?: Prisma.SortOrder
+  recipientLastname?: Prisma.SortOrder
   recipientPhone?: Prisma.SortOrder
   cityName?: Prisma.SortOrder
   cityRef?: Prisma.SortOrder
@@ -505,7 +527,8 @@ export type EnumDeliveryMethodFieldUpdateOperationsInput = {
 export type DeliveryCreateWithoutOrderInput = {
   id?: string
   method: $Enums.DeliveryMethod
-  recipientFullname: string
+  recipientFirstname: string
+  recipientLastname: string
   recipientPhone: string
   cityName: string
   cityRef: string
@@ -519,7 +542,8 @@ export type DeliveryCreateWithoutOrderInput = {
 export type DeliveryUncheckedCreateWithoutOrderInput = {
   id?: string
   method: $Enums.DeliveryMethod
-  recipientFullname: string
+  recipientFirstname: string
+  recipientLastname: string
   recipientPhone: string
   cityName: string
   cityRef: string
@@ -549,7 +573,8 @@ export type DeliveryUpdateToOneWithWhereWithoutOrderInput = {
 export type DeliveryUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod
-  recipientFullname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientFirstname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientLastname?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhone?: Prisma.StringFieldUpdateOperationsInput | string
   cityName?: Prisma.StringFieldUpdateOperationsInput | string
   cityRef?: Prisma.StringFieldUpdateOperationsInput | string
@@ -563,7 +588,8 @@ export type DeliveryUpdateWithoutOrderInput = {
 export type DeliveryUncheckedUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod
-  recipientFullname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientFirstname?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientLastname?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhone?: Prisma.StringFieldUpdateOperationsInput | string
   cityName?: Prisma.StringFieldUpdateOperationsInput | string
   cityRef?: Prisma.StringFieldUpdateOperationsInput | string
@@ -579,7 +605,8 @@ export type DeliveryUncheckedUpdateWithoutOrderInput = {
 export type DeliverySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   method?: boolean
-  recipientFullname?: boolean
+  recipientFirstname?: boolean
+  recipientLastname?: boolean
   recipientPhone?: boolean
   cityName?: boolean
   cityRef?: boolean
@@ -595,7 +622,8 @@ export type DeliverySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type DeliverySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   method?: boolean
-  recipientFullname?: boolean
+  recipientFirstname?: boolean
+  recipientLastname?: boolean
   recipientPhone?: boolean
   cityName?: boolean
   cityRef?: boolean
@@ -611,7 +639,8 @@ export type DeliverySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type DeliverySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   method?: boolean
-  recipientFullname?: boolean
+  recipientFirstname?: boolean
+  recipientLastname?: boolean
   recipientPhone?: boolean
   cityName?: boolean
   cityRef?: boolean
@@ -627,7 +656,8 @@ export type DeliverySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type DeliverySelectScalar = {
   id?: boolean
   method?: boolean
-  recipientFullname?: boolean
+  recipientFirstname?: boolean
+  recipientLastname?: boolean
   recipientPhone?: boolean
   cityName?: boolean
   cityRef?: boolean
@@ -639,7 +669,7 @@ export type DeliverySelectScalar = {
   orderId?: boolean
 }
 
-export type DeliveryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "method" | "recipientFullname" | "recipientPhone" | "cityName" | "cityRef" | "warehouseName" | "warehouseRef" | "trackingNumber" | "createdAt" | "updatedAt" | "orderId", ExtArgs["result"]["delivery"]>
+export type DeliveryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "method" | "recipientFirstname" | "recipientLastname" | "recipientPhone" | "cityName" | "cityRef" | "warehouseName" | "warehouseRef" | "trackingNumber" | "createdAt" | "updatedAt" | "orderId", ExtArgs["result"]["delivery"]>
 export type DeliveryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
 }
@@ -658,7 +688,8 @@ export type $DeliveryPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     method: $Enums.DeliveryMethod
-    recipientFullname: string
+    recipientFirstname: string
+    recipientLastname: string
     recipientPhone: string
     cityName: string
     cityRef: string
@@ -1094,7 +1125,8 @@ export interface Prisma__DeliveryClient<T, Null = never, ExtArgs extends runtime
 export interface DeliveryFieldRefs {
   readonly id: Prisma.FieldRef<"Delivery", 'String'>
   readonly method: Prisma.FieldRef<"Delivery", 'DeliveryMethod'>
-  readonly recipientFullname: Prisma.FieldRef<"Delivery", 'String'>
+  readonly recipientFirstname: Prisma.FieldRef<"Delivery", 'String'>
+  readonly recipientLastname: Prisma.FieldRef<"Delivery", 'String'>
   readonly recipientPhone: Prisma.FieldRef<"Delivery", 'String'>
   readonly cityName: Prisma.FieldRef<"Delivery", 'String'>
   readonly cityRef: Prisma.FieldRef<"Delivery", 'String'>

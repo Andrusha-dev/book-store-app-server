@@ -3,7 +3,8 @@ import type { DeliveryMethod } from '../../../generated/prisma/enums';
 export class DeliveryResponseDto {
   id: string;
   method: DeliveryMethod;
-  recipientFullname: string;
+  recipientFirstname: string;
+  recipientLastname: string;
   recipientPhone: string;
   cityName: string;
   cityRef: string;

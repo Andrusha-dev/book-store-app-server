@@ -1,17 +1,17 @@
 import crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import type { AppConfig } from '../../../core/config/app-config.schema';
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 
 
-export interface CreateInvoiceOutput {
+export interface CreateInvoiceResponse {
   invoiceId: string;
   pageUrl: string; //Лінк на оплату
 }
 
 @Injectable()
-export class MonobankService {
+export class MonobankProvider {
   private readonly monoApiToken: string;
   private cachedPubKey: string | null = null; //Кеш публічний ключ монобанку. Оновлюється методом getPublicKey
   private expiredAt: number = 0; //Термін дії публічного ключа монобанку. Оновлюється методом getPublicKey
@@ -30,18 +30,17 @@ export class MonobankService {
     this.backendUrl = configService.get<AppConfig['BACKEND_URL']>('BACKEND_URL');
     //sandbox передбачає обовязково наявність режиму, відмінного від production і значення "mock-token" для token.
     //Якщо хоча б одна умова не виконується - здійснюється повноцінна взаємодія з api монобанку, в тому числі, якщо token згенерований в тестовому режимі монобанку
-    this.isSandbox = (configService.get<AppConfig['NODE_ENV']>('NODE_ENV') !== 'production')
-      && (this.monoApiToken === 'mock-token');
+    this.isSandbox = configService.get<AppConfig['NODE_ENV']>('NODE_ENV') !== 'production'
   }
 
   //Метод для отримання інвойсу від монобанку
   createInvoice = async (
     orderId: string,
     amount: number
-  ): Promise<CreateInvoiceOutput> => {
+  ): Promise<CreateInvoiceResponse> => {
     if (this.isSandbox) {
       //Якщо ми в режимі sandbox, то повертаємо результат-заглушку
-      const output: CreateInvoiceOutput = {
+      const output: CreateInvoiceResponse = {
         invoiceId: "mocked-invoice-id",
         pageUrl: `https://sandbox.monobank.ua/checkout/mock_pay_page_${orderId}`,
       };
@@ -49,34 +48,39 @@ export class MonobankService {
       return output;
     }
 
-    const response = await fetch(`${this.monoApiUrl}/merchant/invoice/create`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Token': this.monoApiToken,
-      },
-      body: JSON.stringify({
-        //Monobank приймає суму в копійках (ціле число), тому множимо на 100
-        amount: Math.round(amount * 100),
-        ccy: 980, //Код валюти: Гривня (UAH)
-        merchantPaymInfo: {
-          reference: String(orderId), // тут, а не на верхньому рівні
-          destination: `Оплата замовлення №${orderId}`,
+    try {
+      const response = await fetch(`${this.monoApiUrl}/merchant/invoice/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Token': this.monoApiToken,
         },
-        redirectUrl: `${this.frontendUrl}/orders/${orderId}/payment-result`, //Куди повернути клієнта після оплати
-        webHookUrl: `${this.backendUrl}/api/v1/payment/webhook/monobank`, //Сюди Моно пришле сповіщення про успішну оплату
-      }),
-    });
+        body: JSON.stringify({
+          //Monobank приймає суму в копійках (ціле число), тому множимо на 100
+          amount: Math.round(amount * 100),
+          ccy: 980, //Код валюти: Гривня (UAH)
+          merchantPaymInfo: {
+            reference: String(orderId), // тут, а не на верхньому рівні
+            destination: `Оплата замовлення №${orderId}`,
+          },
+          redirectUrl: `${this.frontendUrl}/orders/${orderId}/payment-result`, //Куди повернути клієнта після оплати
+          webHookUrl: `${this.backendUrl}/api/v1/payment/webhook/monobank`, //Сюди Моно пришле сповіщення про успішну оплату
+        }),
+      });
 
-    if (!response.ok) {
-      const errorText: string = await response.text();
-      throw new BadGatewayException(errorText, '[MONOBANK_SERVICE_ERROR]: Монобанк відхилив запит на створення інвойсу',);
+      if (!response.ok) {
+        const errorText: string = await response.text();
+        throw new BadGatewayException(errorText, '[MONOBANK_SERVICE_ERROR]: Монобанк відхилив запит на створення інвойсу',);
+      }
+
+      //Розпарсюємо дані від Моно (нас цікавить поле pageUrl)
+      const output: CreateInvoiceResponse = await response.json() as CreateInvoiceResponse;
+
+      return output;
+    } catch (error) {
+      if (error instanceof BadGatewayException) {throw error}
+      throw new BadGatewayException('При підключенні до сервера монобанку сталась помилка. Спробуйте пізніше')
     }
-
-    //Розпарсюємо дані від Моно (нас цікавить поле pageUrl)
-    const output: CreateInvoiceOutput = await response.json() as CreateInvoiceOutput;
-
-    return output;
   }
 
   //Метод для перевірки підпису даних, отриманих з вебхуку монобанку
