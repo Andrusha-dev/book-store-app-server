@@ -7,12 +7,6 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
-  /*
-  @Post()
-  create(@Body() createPaymentDto: CreatePaymentDto) {
-    return this.paymentService.create(createPaymentDto);
-  }
-   */
 
   @Get()
   findAll() {

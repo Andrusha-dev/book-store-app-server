@@ -6,7 +6,8 @@ import { type DeliveryMethod, Prisma } from '../../generated/prisma/client';
 import { DeliveryMapper } from './delivery.mapper';
 import { DeliveryEntity } from './entities/delivery.entity';
 import type { SetTrackingNumberDto } from './dto/set-tracking-number.dto';
-import type { NovaPoshtaProvider } from './infrastructure/nova-poshta.provider';
+import { NovaPoshtaProvider } from './infrastructure/nova-poshta.provider';
+import type { CreateDeliveryDto } from './dto/create-delivery.dto';
 
 @Injectable()
 export class DeliveryService {
@@ -15,6 +16,16 @@ export class DeliveryService {
     private readonly novaPoshtaProvider: NovaPoshtaProvider,
     private readonly logger: Logger
   ) {}
+
+  async create(orderId: string, dto: CreateDeliveryDto, tx?: Prisma.TransactionClient): Promise<DeliveryResponseDto> {
+    const dbClient = tx ?? this.prismaService;
+
+    const data: Prisma.DeliveryCreateInput = DeliveryMapper.toDeliveryCreateInput(orderId, dto);
+
+    const delivery: DeliveryEntity = await dbClient.delivery.create({ data });
+
+    return DeliveryMapper.toResponseDto(delivery);
+  }
 
   async setTrackingNumber(dto: SetTrackingNumberDto): Promise<DeliveryResponseDto> {
     const createTrackingRequest = DeliveryMapper.toICreateTrackingRequest(dto);

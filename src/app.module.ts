@@ -19,13 +19,11 @@ import { CartModule } from './modules/cart/cart.module';
 import { OrderModule } from './modules/order/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { DeliveryModule } from './modules/delivery/delivery.module';
-import { CheckoutModule } from './modules/checkout/checkout.module';
-
 
 
 
 @Module({
-  imports: [CoreModule, UserModule, AuthModule, ProductModule, CategoryModule, AuthorModule, PublisherModule, CartModule, OrderModule, PaymentModule, DeliveryModule, CheckoutModule],
+  imports: [CoreModule, UserModule, AuthModule, ProductModule, CategoryModule, AuthorModule, PublisherModule, CartModule, OrderModule, PaymentModule, DeliveryModule],
   controllers: [AppController],
   providers: [
     AppService,

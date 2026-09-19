@@ -13,17 +13,21 @@ import { PaymentMapper } from '../payment/payment.mapper';
 import type { CheckoutResponseDto } from './dto/checkout-response.dto';
 import type { CartResponseDto } from '../cart/dto/cart-response.dto';
 import type { SetTrackingNumberDto } from '../delivery/dto/set-tracking-number.dto';
+import type { CreateDeliveryDto } from '../delivery/dto/create-delivery.dto';
+import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 
 export class OrderMapper {
-  private static toPrismaOrderItemCreateInput(cartItem: CartItemResponseDto): Prisma.OrderItemCreateWithoutOrderInput {
+  private static toPrismaOrderItemCreateInput(
+    cartItem: CartItemResponseDto,
+  ): Prisma.OrderItemCreateWithoutOrderInput {
     const data: Prisma.OrderItemCreateWithoutOrderInput = {
       quantity: cartItem.quantity,
       price: cartItem.product.price * cartItem.quantity,
       product: {
-        connect: {id: cartItem.productId}
-      }
-    }
+        connect: { id: cartItem.productId },
+      },
+    };
 
     return data;
   }
@@ -31,7 +35,7 @@ export class OrderMapper {
   static toPrismaOrderCreateInput(
     userId: string,
     cart: CartResponseDto,
-    dto: CreateOrderDto
+    dto: CreateOrderDto,
   ): Prisma.OrderCreateInput {
     //Створюємо OrderItemCreateWithoutOrderInput[]
     const items = cart.items.map((item) =>
@@ -43,9 +47,6 @@ export class OrderMapper {
       return acc + Number(item.price);
     }, 0);
 
-    //Створюємо DeliveryCreateWithoutOrderInput
-    const delivery = DeliveryMapper.toDeliveryCreateWithoutOrderInput(dto.delivery);
-
     const data: Prisma.OrderCreateInput = {
       amount,
       paymentMethod: dto.paymentMethod,
@@ -55,24 +56,20 @@ export class OrderMapper {
       items: {
         create: items,
       },
-      delivery: {
-        create: delivery,
-      },
     };
 
     return data;
   }
 
-  //маппер для маппінгу до SetTrackingNumberDto. Генерація ттн ініціюватиметься в OrderService, бо він виступає оркестратором
+  //Маппінг до SetTrackingNumberDto. Створюється в модулі order, оскільки OrderService виступає оркестратором для генерації ТТН
   static toSetTrackingNumberDto(order: OrderEntity): SetTrackingNumberDto {
     const volumeMm3 = order.items.reduce((acc, item) => {
-      return acc + (item.product.widthMm * item.product.heightMm * item.product.depthMm * item.product.quantity);
+      return (acc + (item.product.widthMm * item.product.heightMm * item.product.depthMm * item.product.quantity));
     }, 0);
 
     const weightGrams = order.items.reduce((acc, item) => {
-      return acc + (item.product.weightGrams * item.product.quantity);
-    }, 0)
-
+      return acc + item.product.weightGrams * item.product.quantity;
+    }, 0);
 
     const dto: SetTrackingNumberDto = {
       orderId: order.id,
@@ -86,8 +83,8 @@ export class OrderMapper {
       warehouseName: order.delivery!.warehouseName,
       warehouseRef: order.delivery!.warehouseRef,
       volumeMm3,
-      weightGrams
-    }
+      weightGrams,
+    };
 
     return dto;
   }
@@ -101,8 +98,8 @@ export class OrderMapper {
       updatedAt: item.updatedAt,
       orderId: item.orderId,
       productId: item.productId,
-      product: ProductMapper.toBaseResponseDto(item.product)
-    }
+      product: ProductMapper.toBaseResponseDto(item.product),
+    };
 
     return responseDto;
   }
@@ -116,11 +113,15 @@ export class OrderMapper {
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
       userId: order.userId,
-      items: order.items.map(item => OrderMapper.toOrderItemResponseDto(item)),
+      items: order.items.map((item) =>
+        OrderMapper.toOrderItemResponseDto(item),
+      ),
       //Вказуємо, що поле order.delivery точно не містить null, оскільки ми точно знаємо, що delivery створюється разом з order
       delivery: DeliveryMapper.toResponseDto(order.delivery!),
-      payments: order.payments.map(payment => PaymentMapper.toResponseDto(payment))
-    }
+      payments: order.payments.map((payment) =>
+        PaymentMapper.toResponseDto(payment),
+      ),
+    };
 
     return responseDto;
   }
@@ -128,8 +129,8 @@ export class OrderMapper {
   static toCheckoutResponseDto(order: OrderEntity, paymentUrl: string | null): CheckoutResponseDto {
     const responseDto: CheckoutResponseDto = {
       order: OrderMapper.toOrderResponseDto(order),
-      paymentUrl
-    }
+      paymentUrl,
+    };
 
     return responseDto;
   }

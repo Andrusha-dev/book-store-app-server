@@ -1,9 +1,9 @@
 import type { CreateDeliveryDto } from '../dto/create-delivery.dto';
 import type { OrderResponseDto } from '../../order/dto/order-response.dto';
 import { ConfigService } from '@nestjs/config';
-import type { AppConfig } from '../../../core/config/app-config.schema';
+import { AppConfig } from '../../../core/config/app-config.schema';
 import type { OrderPaymentMethod } from '../../../generated/prisma/enums';
-import { BadGatewayException, BadRequestException } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 
 
 export interface ICreateTrackingRequest {
@@ -24,12 +24,14 @@ interface ICreateTrackingResponse {
   trackingNumber: string;
 }
 
+//Контракт відповіді від НП
 interface INovaPoshtaResponse {
   success: boolean;
   errors: string[];
   data: {IntraDocNumber: string}[] //Якщо ТТН одна, то в масиві буде лише один об'єкт
 }
 
+@Injectable()
 export class NovaPoshtaProvider {
   private readonly citySender: string;
   private readonly sender: string;
@@ -40,10 +42,10 @@ export class NovaPoshtaProvider {
 
   constructor(private readonly configService: ConfigService<AppConfig, true>) {
     this.citySender = configService.get('NP_SENDER_CITY_REF', { infer: true });
-    this.sender = this.configService.get('NP_SENDER_REF', { infer: true });
-    this.senderAddress = this.configService.get('NP_SENDER_WAREHOUSE_REF', { infer: true });
-    this.contactSender = this.configService.get('NP_SENDER_CONTACT_REF', { infer: true });
-    this.sendersPhone = this.configService.get('NP_SENDER_PHONE', { infer: true });
+    this.sender = configService.get('NP_SENDER_REF', { infer: true });
+    this.senderAddress = configService.get('NP_SENDER_WAREHOUSE_REF', { infer: true });
+    this.contactSender = configService.get('NP_SENDER_CONTACT_REF', { infer: true });
+    this.sendersPhone = configService.get('NP_SENDER_PHONE', { infer: true });
     this.novaPoshtaUrl = configService.get('NP_API_URL', { infer: true });
   }
 
@@ -116,7 +118,7 @@ export class NovaPoshtaProvider {
 
   private async createTrackingProcess(npPayload: any): Promise<string> {
     try {
-      const response = await fetch('https://api.novaposhta.ua/v2.0/json/', {
+      const response = await fetch(`${this.novaPoshtaUrl}/v2.0/json/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

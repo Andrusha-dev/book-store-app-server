@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import type { AppConfig } from '../../../core/config/app-config.schema';
-import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 
 

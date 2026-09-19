@@ -7,8 +7,8 @@ import type { ICreateTrackingRequest } from './infrastructure/nova-poshta.provid
 
 
 export class DeliveryMapper {
-  static toDeliveryCreateWithoutOrderInput(dto: CreateDeliveryDto): Prisma.DeliveryCreateWithoutOrderInput {
-    const data: Prisma.DeliveryCreateWithoutOrderInput = {
+  static toDeliveryCreateInput(orderId: string, dto: CreateDeliveryDto): Prisma.DeliveryCreateInput {
+    const data: Prisma.DeliveryCreateInput = {
       method: dto.method,
       recipientFirstname: dto.recipientFirstname,
       recipientLastname: dto.recipientLastname,
@@ -16,7 +16,10 @@ export class DeliveryMapper {
       cityName: dto.cityName,
       cityRef: dto.cityRef,
       warehouseName: dto.warehouseName,
-      warehouseRef: dto.warehouseRef
+      warehouseRef: dto.warehouseRef,
+      order: {
+        connect: {id: orderId}
+      }
     }
 
     return data;

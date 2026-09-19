@@ -30,8 +30,11 @@ export class OrderService {
 
   async checkout(userId: string, dto: CreateOrderDto): Promise<CheckoutResponseDto> {
     const createdOrder: OrderEntity = await this.prismaService.$transaction(async (tx) => {
-      //Створюємо замовлення з доставкою
+      //Створюємо замовлення
       const order: OrderEntity = await this.create(userId, dto, tx);
+
+      //Створюємо доставку
+      await this.deliveryService.create(order.id, dto.delivery, tx);
 
       //Списуємо товар
       for (const item of order.items) {

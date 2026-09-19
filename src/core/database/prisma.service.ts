@@ -37,9 +37,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleInit(): Promise<void> {
     try {
-      //Цей метод перевіряє чи працює адаптер Prisma
+      //Перевіряємо, чи працює адаптер Prisma
       await this.$connect();
-      //Цей метод перевіряє фактичне підключення до бази даних через легкий sql запит
+      //Перевіряємо фактичне підключення до бази даних через легкий sql запит
       await this.pool.query('SELECT 1');
       this.logger.log('Database connected successfully');
     } catch (error) {
