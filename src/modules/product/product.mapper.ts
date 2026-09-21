@@ -117,27 +117,6 @@ export class ProductMapper {
     where.status = filters.status ?? undefined;
 
     return where;
-      /*
-      {
-      status: filters.status ?? undefined,
-      categories: filters.categoryId
-        ? { some: { id: filters.categoryId } }
-        : undefined,
-      authorId: filters.authorId ?? undefined,
-      publisherId: filters.publisherId ?? undefined,
-      //для gte та lte prisma може приймати undefined
-      price: { gte: filters.minPrice, lte: filters.maxPrice },
-      coverType: filters.coverTypes?.length
-        ? { in: filters.coverTypes }
-        : undefined,
-      language: filters.languages?.length
-        ? { in: filters.languages }
-        : undefined,
-      name: filters.search
-        ? { contains: filters.search, mode: 'insensitive' }
-        : undefined,
-    };
-    */
   }
 
   static toBaseResponseDto(product: ProductBaseEntity): ProductBaseResponseDto {

@@ -16,6 +16,9 @@ export interface ICreateTrackingRequest {
   readonly cityRef: string;
   readonly warehouseName: string;
   readonly warehouseRef: string;
+  readonly widthSm: number;
+  readonly heightSm: number;
+  readonly depthSm: number;
   readonly volumeM3: number;
   readonly weightKGrams: number;
 }
@@ -39,6 +42,9 @@ export class NovaPoshtaProvider {
   private readonly contactSender: string;
   private readonly sendersPhone: string;
   private readonly novaPoshtaUrl: string;
+  private readonly maxHeightSm: number;
+  private readonly maxWeightKGrams: number;
+  private readonly isSandbox: boolean;
 
   constructor(private readonly configService: ConfigService<AppConfig, true>) {
     this.citySender = configService.get('NP_SENDER_CITY_REF', { infer: true });
@@ -47,12 +53,19 @@ export class NovaPoshtaProvider {
     this.contactSender = configService.get('NP_SENDER_CONTACT_REF', { infer: true });
     this.sendersPhone = configService.get('NP_SENDER_PHONE', { infer: true });
     this.novaPoshtaUrl = configService.get('NP_API_URL', { infer: true });
+    this.maxHeightSm = configService.get('NP_POSTOMAT_MAX_HEIGHT_SM', { infer: true });
+    this.maxWeightKGrams = configService.get('NP_POSTOMAT_MAX_WEIGHT_KG', { infer: true });
+    this.isSandbox = configService.get('NODE_ENV', {infer: true}) !== "production";
   }
 
   //Метод для створення ттн доставки замовлення(через api нової пошти)
   async createTracking(
     request: ICreateTrackingRequest,
   ): Promise<ICreateTrackingResponse> {
+    if(this.isSandbox) {
+      return { trackingNumber: `mocked-tracking-number-${crypto.randomUUID()}`};
+    }
+
     //Дані, які передаються лише, коли оплата готівкою (накладений платіж)
     const backwardDeliveryData =
       request.paymentMethod === 'CASH'
@@ -77,8 +90,19 @@ export class NovaPoshtaProvider {
         DateTime: new Date().toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' }),
         CargoType: 'Parcel', // або Cargo
         Weight: request.weightKGrams.toFixed(2),
-        VolumeGeneral: request.volumeM3.toFixed(4),
+        //Загальний об'єм в м.куб.
+        VolumeGeneral: request.volumeM3.toFixed(3),
         SeatsAmount: '1',
+        //Метрики для посадочних місць. Якщо SeatsAmount = 1, то в масиві тільки один обєкт
+        OptionsSeat: [
+          {
+            weight: request.weightKGrams.toFixed(2),
+            volumetricVolume: request.volumeM3.toFixed(3),
+            volumetricWidth: request.widthSm.toFixed(1), // Базова ширина в см
+            volumetricHeight: request.heightSm.toFixed(1), // Базова висота в см
+            volumetricLength: request.depthSm.toFixed(1), // Базова довжина (в моєму випадку товщина) в см
+          },
+        ],
         Cost: request.amount.toFixed(2), // Оціночна вартість для страховика = сумі замовлення
         ServiceType: 'WarehouseWarehouse',
         Description: 'Інтернет-замовлення',
@@ -105,11 +129,9 @@ export class NovaPoshtaProvider {
   }
 
   //Перевіряє, чи метрики замовлення підходять для відправки у поштомат
-  canSendToPostomat(weightKGrams: number, lengthSm: number): boolean {
-    if (
-      this.configService.get('NP_POSTOMAT_MAX_WEIGHT_KG', { infer: true }) < weightKGrams ||
-      this.configService.get('NP_POSTOMAT_MAX_LENGTH_SM', { infer: true }) < lengthSm
-    ) {
+  canSendToPostomat(weightKGrams: number, heightSm: number): boolean {
+    console.log(`weightKGrams: ${weightKGrams}, heightSm: ${heightSm}`);
+    if (this.maxWeightKGrams < weightKGrams || this.maxHeightSm < heightSm) {
       return false;
     }
 

@@ -31,8 +31,6 @@ export class CreateDeliveryDto {
   @IsNotEmpty({ message: "Поле 'warehouseName' не може бути порожнім" })
   readonly warehouseName: string;
 
-  @IsUUID('all', {
-    message: "Поле 'warehouseRef' має відповідати формату UUID",
-  })
+  @IsUUID('all', { message: "Поле 'warehouseRef' має відповідати формату UUID" })
   readonly warehouseRef: string;
 }

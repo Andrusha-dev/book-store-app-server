@@ -187,7 +187,7 @@ model OrderItem {
   updatedAt DateTime @updatedAt
 
   productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id]) //onDelete залишаєм по змовчуванню, щоб не видалити товар, який хоч раз замовили
   orderId   String
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }

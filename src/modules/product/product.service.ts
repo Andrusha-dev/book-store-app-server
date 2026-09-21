@@ -34,6 +34,7 @@ export class ProductService {
       data,
       include: productInclude,
     });
+    this.logger.log(`Товар ${product.name} з ID ${product.id} успішно створено`);
 
     return ProductMapper.toResponseDto(product);
   }
@@ -175,6 +176,7 @@ export class ProductService {
       data,
       include: productInclude
     });
+    this.logger.log(`Товар ${product.name} з ID ${product.id} успішно оновлено`)
 
     return ProductMapper.toResponseDto(product);
   }

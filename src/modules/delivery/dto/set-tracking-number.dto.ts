@@ -12,6 +12,8 @@ export class SetTrackingNumberDto {
   readonly cityRef: string;
   readonly warehouseName: string;
   readonly warehouseRef: string;
-  readonly volumeMm3: number;
+  readonly widthMm: number;
+  readonly heightMm: number;
+  readonly depthMm: number;
   readonly weightGrams: number;
 }

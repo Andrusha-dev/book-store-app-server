@@ -6,15 +6,15 @@ import type { ProductBaseResponseDto } from '../../product/dto/product-base-resp
 import type { DeliveryResponseDto } from '../../delivery/dto/delivery-response.dto';
 import type { PaymentResponseDto } from '../../payment/dto/payment-response.dto';
 
-class OrderItemResponseDto {
+export class OrderItemResponseDto {
   readonly id: string;
   readonly quantity: number;
   readonly price: number;
   readonly createdAt: Date;
   readonly updatedAt: Date;
-  readonly productId: string;
   readonly orderId: string;
-  readonly product: ProductBaseResponseDto
+  readonly productId: string;
+  readonly product: ProductBaseResponseDto;
 }
 
 export class OrderResponseDto {

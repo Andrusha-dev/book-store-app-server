@@ -36,7 +36,10 @@ export class DeliveryMapper {
       cityRef: dto.cityRef,
       warehouseName: dto.warehouseName,
       warehouseRef: dto.warehouseRef,
-      volumeM3: dto.volumeMm3 / 100000000,
+      widthSm: dto.widthMm / 10,
+      heightSm: dto.heightMm /10,
+      depthSm: dto.depthMm / 10,
+      volumeM3: (dto.widthMm * dto.heightMm * dto.depthMm) / 10000000,
       weightKGrams: dto.weightGrams / 1000
     }
 

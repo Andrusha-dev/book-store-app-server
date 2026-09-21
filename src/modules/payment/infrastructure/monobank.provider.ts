@@ -41,7 +41,7 @@ export class MonobankProvider {
     if (this.isSandbox) {
       //Якщо ми в режимі sandbox, то повертаємо результат-заглушку
       const output: CreateInvoiceResponse = {
-        invoiceId: "mocked-invoice-id",
+        invoiceId: `mocked-invoice-id-${crypto.randomUUID()}`,
         pageUrl: `https://sandbox.monobank.ua/checkout/mock_pay_page_${orderId}`,
       };
 

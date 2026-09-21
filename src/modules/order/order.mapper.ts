@@ -2,10 +2,13 @@ import type { CreateOrderDto } from './dto/create-order.dto';
 import { DeliveryMethod, type OrderPaymentMethod, type OrderStatus, Prisma } from '../../generated/prisma/client';
 import type { CartItemResponseDto } from '../cart/dto/cart-Item-response.dto';
 import { OrderEntity, OrderItemEntity } from './entities/order.entity';
-import type { OrderResponseDto } from './dto/order-response.dto';
+import {
+  OrderItemResponseDto,
+  type OrderResponseDto,
+} from './dto/order-response.dto';
 import type { DeliveryResponseDto } from '../delivery/dto/delivery-response.dto';
 import { PaymentResponseDto } from '../payment/dto/payment-response.dto';
-import type { OrderItemResponseDto } from './dto/order-item-response.dto';
+//import type { OrderItemResponseDto } from './dto/order-item-response.dto';
 import type { ProductBaseResponseDto } from '../product/dto/product-base-response.dto';
 import { ProductMapper } from '../product/product.mapper';
 import { DeliveryMapper } from '../delivery/delivery.mapper';
@@ -15,6 +18,8 @@ import type { CartResponseDto } from '../cart/dto/cart-response.dto';
 import type { SetTrackingNumberDto } from '../delivery/dto/set-tracking-number.dto';
 import type { CreateDeliveryDto } from '../delivery/dto/create-delivery.dto';
 import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import type { OrdersQueryDto } from './dto/orders-query.dto';
+
 
 
 export class OrderMapper {
@@ -61,10 +66,35 @@ export class OrderMapper {
     return data;
   }
 
+  static toPrismaOrderWhereInput(
+    filters: Omit<OrdersQueryDto, "pageNo" | "pageSize" | "sortOrder" | "sortBy">,
+    userId?: string
+  ): Prisma.OrderWhereInput {
+    const where: Prisma.OrderWhereInput = {
+      userId, //Якщо userId не undefined, то здійснюється пошук замовлень користувача, якщо - ні, то - пошук усіх замовлень
+      status: filters.statuses?.length
+        ? {in: filters.statuses}
+        : undefined,
+      paymentMethod: filters.paymentMethods?.length
+        ? {in: filters.paymentMethods}
+        : undefined
+    }
+
+    return where;
+  }
+
   //Маппінг до SetTrackingNumberDto. Створюється в модулі order, оскільки OrderService виступає оркестратором для генерації ТТН
   static toSetTrackingNumberDto(order: OrderEntity): SetTrackingNumberDto {
-    const volumeMm3 = order.items.reduce((acc, item) => {
-      return (acc + (item.product.widthMm * item.product.heightMm * item.product.depthMm * item.product.quantity));
+    const widthMm = order.items.reduce((acc, item) => {
+      return acc < item.product.widthMm ? item.product.widthMm : acc
+    }, 0);
+
+    const heightMm = order.items.reduce((acc, item) => {
+      return acc < item.product.heightMm ? item.product.heightMm : acc;
+    }, 0);
+
+    const depthMm = order.items.reduce((acc, item) => {
+      return acc + item.product.depthMm;
     }, 0);
 
     const weightGrams = order.items.reduce((acc, item) => {
@@ -82,7 +112,9 @@ export class OrderMapper {
       cityRef: order.delivery!.cityRef,
       warehouseName: order.delivery!.warehouseName,
       warehouseRef: order.delivery!.warehouseRef,
-      volumeMm3,
+      widthMm,
+      heightMm,
+      depthMm,
       weightGrams,
     };
 

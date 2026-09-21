@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -6,7 +6,10 @@ import { Auth } from '../../common/decorators/auth.decorator';
 import { ApiErrors } from '../../common/decorators/api-errors.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { ITokenPayload } from '../../common/types/token-payload.interface';
-import type { CheckoutResponseDto } from './dto/checkout-response.dto';
+import { CheckoutResponseDto } from './dto/checkout-response.dto';
+import { OrderResponseDto } from './dto/order-response.dto';
+import { OrdersResponseDto } from './dto/orders-response.dto';
+import { OrdersQueryDto } from './dto/orders-query.dto';
 
 @Controller('orders')
 export class OrderController {
@@ -19,17 +22,27 @@ export class OrderController {
     @Body() dto: CreateOrderDto,
     @CurrentUser() user: ITokenPayload
   ): Promise<CheckoutResponseDto> {
-    return this.orderService.checkout(user.id, dto);
+    return await this.orderService.checkout(user.id, dto);
   }
 
   @Get()
-  findAll() {
-    return this.orderService.findAll();
+  @Auth()
+  @ApiErrors()
+  async findMany(
+    @Query() queryDto: OrdersQueryDto,
+    @CurrentUser() user: ITokenPayload
+  ): Promise<OrdersResponseDto> {
+    return await this.orderService.findMany(queryDto, user.id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
+  @Auth()
+  @ApiErrors()
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: ITokenPayload
+  ): Promise<OrderResponseDto> {
+    return await this.orderService.findOne(id, user.id);
   }
 
   /*

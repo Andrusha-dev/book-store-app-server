@@ -23,6 +23,7 @@ export class DeliveryService {
     const data: Prisma.DeliveryCreateInput = DeliveryMapper.toDeliveryCreateInput(orderId, dto);
 
     const delivery: DeliveryEntity = await dbClient.delivery.create({ data });
+    this.logger.log(`Оплату з ID ${delivery.id} успішно створено для замовлення з ID ${orderId}`);
 
     return DeliveryMapper.toResponseDto(delivery);
   }
@@ -45,16 +46,17 @@ export class DeliveryService {
   }
 
   //Метод для перевірки відповідності ваги та довжини замовлення для доставки в поштомат НП
-  verifyOrderMetrics(deliveryMethod: DeliveryMethod, lengthMm: number, weightGrams: number): void {
+  verifyOrderMetrics(deliveryMethod: DeliveryMethod, heightMm: number, weightGrams: number): void {
     //Якщо метод доставки у відділення то будь-які метрики підходять
     if(deliveryMethod === 'WAREHOUSE') {
       return
     }
 
-    const lengthSm = lengthMm / 10;
+    const heightSm = heightMm / 10;
     const weightKGrams = weightGrams / 1000;
 
-    const canSend = this.novaPoshtaProvider.canSendToPostomat(lengthSm, weightKGrams);
+    const canSend =
+      this.novaPoshtaProvider.canSendToPostomat(weightKGrams, heightSm);
     if(!canSend) {
       throw new BadRequestException(`Метрики замовлення перевищують допустимі значення для методу доставки ${deliveryMethod}`)
     }
