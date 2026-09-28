@@ -2,5 +2,5 @@
 
 
 export class InvoiceResponseDto {
-  readonly paymentUrl: string; //Лінк на оплату
+  readonly paymentUrl: string | null; //Лінк на оплату
 }

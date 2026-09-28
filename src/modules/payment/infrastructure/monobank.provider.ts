@@ -40,12 +40,10 @@ export class MonobankProvider {
   ): Promise<CreateInvoiceResponse> => {
     if (this.isSandbox) {
       //Якщо ми в режимі sandbox, то повертаємо результат-заглушку
-      const output: CreateInvoiceResponse = {
+      return {
         invoiceId: `mocked-invoice-id-${crypto.randomUUID()}`,
         pageUrl: `https://sandbox.monobank.ua/checkout/mock_pay_page_${orderId}`,
-      };
-
-      return output;
+      }
     }
 
     try {
@@ -60,11 +58,11 @@ export class MonobankProvider {
           amount: Math.round(amount * 100),
           ccy: 980, //Код валюти: Гривня (UAH)
           merchantPaymInfo: {
-            reference: String(orderId), // тут, а не на верхньому рівні
+            reference: orderId, // тут, а не на верхньому рівні
             destination: `Оплата замовлення №${orderId}`,
           },
           redirectUrl: `${this.frontendUrl}/orders/${orderId}/payment-result`, //Куди повернути клієнта після оплати
-          webHookUrl: `${this.backendUrl}/api/v1/payment/webhook/monobank`, //Сюди Моно пришле сповіщення про успішну оплату
+          webHookUrl: `${this.backendUrl}/api/v1/payments/webhook/monobank`, //Сюди Моно пришле сповіщення про успішну оплату
         }),
       });
 
@@ -73,7 +71,7 @@ export class MonobankProvider {
         throw new BadGatewayException(errorText, '[MONOBANK_SERVICE_ERROR]: Монобанк відхилив запит на створення інвойсу',);
       }
 
-      //Розпарсюємо дані від Моно (нас цікавить поле pageUrl)
+      //Розпарсюємо дані від Моно
       const output: CreateInvoiceResponse = await response.json() as CreateInvoiceResponse;
 
       return output;
@@ -124,7 +122,7 @@ export class MonobankProvider {
     }
 
     const { key } = await response.json() as { key: string };
-    //Перетворюємо Base64 ключ у об'єкт KeyObject
+    //Перетворюємо Base64 ключ у PEM-рядок
     this.cachedPubKey = Buffer.from(key, 'base64').toString('utf-8');
 
     //Генеруєм новий термін дії

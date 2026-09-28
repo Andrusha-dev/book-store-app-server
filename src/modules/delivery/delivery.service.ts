@@ -28,18 +28,17 @@ export class DeliveryService {
     return DeliveryMapper.toResponseDto(delivery);
   }
 
-  async setTrackingNumber(dto: SetTrackingNumberDto): Promise<DeliveryResponseDto> {
+  //Створює ТТН та встановлює номер ТТН в trackingNumber доставки
+  async setTrackingNumber(dto: SetTrackingNumberDto, tx?: Prisma.TransactionClient): Promise<DeliveryResponseDto> {
+    const dbClient = tx ?? this.prismaService;
+
     const createTrackingRequest = DeliveryMapper.toICreateTrackingRequest(dto);
 
     const {trackingNumber} = await this.novaPoshtaProvider.createTracking(createTrackingRequest);
 
-    const delivery: DeliveryEntity = await this.prismaService.delivery.update({
-      where: {
-        orderId: dto.orderId
-      },
-      data: {
-        trackingNumber
-      }
+    const delivery: DeliveryEntity = await dbClient.delivery.update({
+      where: { orderId: dto.orderId },
+      data: { trackingNumber }
     });
 
     return DeliveryMapper.toResponseDto(delivery);
@@ -55,8 +54,7 @@ export class DeliveryService {
     const heightSm = heightMm / 10;
     const weightKGrams = weightGrams / 1000;
 
-    const canSend =
-      this.novaPoshtaProvider.canSendToPostomat(weightKGrams, heightSm);
+    const canSend = this.novaPoshtaProvider.canSendToPostomat(weightKGrams, heightSm);
     if(!canSend) {
       throw new BadRequestException(`Метрики замовлення перевищують допустимі значення для методу доставки ${deliveryMethod}`)
     }

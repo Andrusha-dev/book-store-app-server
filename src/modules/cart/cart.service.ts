@@ -122,9 +122,11 @@ export class CartService {
   }
 
   //Метод для очистки кошика
-  async clear(userId: string): Promise<CartResponseDto> {
+  async clear(userId: string, tx?: Prisma.TransactionClient): Promise<CartResponseDto> {
+    const dbClient = tx ?? this.prismaService;
+
     //Очищуємо Cart через вкладеність, виконавши лише один запит
-    const updatedCart: CartEntity = await this.prismaService.cart.update({
+    const updatedCart: CartEntity = await dbClient.cart.update({
       where: {userId},
       data: {
         items: {

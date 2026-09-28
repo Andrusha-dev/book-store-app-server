@@ -1,9 +1,9 @@
-import { BadRequestException, ForbiddenException, Get, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Get, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PrismaService } from '../../core/database/prisma.service';
 import { Logger } from 'nestjs-pino';
 import type { OrderResponseDto } from './dto/order-response.dto';
-import { Prisma } from '../../generated/prisma/client';
+import { OrderStatus, Prisma } from '../../generated/prisma/client';
 import type { OrderCreateInput } from '../../generated/prisma/models/Order';
 import { OrderMapper } from './order.mapper';
 import { CartService } from '../cart/cart.service';
@@ -22,6 +22,8 @@ import type { ProductsQueryDto } from '../product/dto/products-query.dto';
 import type { OrdersQueryDto } from './dto/orders-query.dto';
 import type { OrdersResponseDto } from './dto/orders-response.dto';
 import { PageMetaDto } from '../../common/dto/page-meta.dto';
+import type { PaymentEntity } from '../payment/entities/payment.entity';
+import type { RetryPaymentResponseDto } from './dto/retry-payment-response.dto';
 
 @Injectable()
 export class OrderService {
@@ -34,61 +36,68 @@ export class OrderService {
     private readonly logger: Logger,
   ) {}
 
-  async checkout(
-    userId: string,
-    dto: CreateOrderDto,
-  ): Promise<CheckoutResponseDto> {
-    const createdOrder: OrderEntity = await this.prismaService.$transaction(
+  async checkout(userId: string, dto: CreateOrderDto): Promise<CheckoutResponseDto> {
+    const order = await this.prismaService.$transaction(
       async (tx) => {
         //Створюємо замовлення
         const order: OrderEntity = await this.create(userId, dto, tx);
         //Створюємо доставку
         await this.deliveryService.create(order.id, dto.delivery, tx);
+        //Створюємо первинну оплату
+        await this.paymentService.createWithoutExternalId(order.id, tx);
         //Списуємо товар
         for (const item of order.items) {
-          await this.productService.decreaseQuantity(
-            item.productId,
-            item.quantity,
-            tx,
-          );
+          await this.productService.decreaseQuantity(item.productId, item.quantity, tx);
         }
+        //Очищуємо кошик
+        await this.cartService.clear(userId, tx);
 
         return order;
-      },
+      }
     );
 
     let paymentUrl: string | null = null;
 
-    try {
-      //Очищуємо кошик. Не повинен бути в одній транзакції зі створенням order, бо очистка кошика це не критична транзакція
-      await this.cartService.clear(userId);
-      //Створюємо інвойс та payment. Це теж не критична транзакція
-      if (dto.paymentMethod === 'CARD') {
-        const invoiceResponseDto: InvoiceResponseDto =
-          await this.paymentService.initializePayment(
-            createdOrder.id,
-            Number(createdOrder.amount),
-          );
-        paymentUrl = invoiceResponseDto.paymentUrl;
-      }
-    } catch (error) {
-      //Глушимо помилку, щоб користувач отримав замовлення. Очистка кошика не критична. А url оплати свідчить про успішність створення інвойсу
-      this.logger.log(
-        { err: error as Error },
-        'Під час очищення кошика чи створення інвойсу оплати сталася помилка',
-      );
+    if (order.paymentMethod === 'CARD') {
+      //Створюємо інвойс для первинної оплати. Створюється по-за блоком транзакцій, щоб платіжний сервер не гальмував виконання транзакцій
+      const invoiceResponseDto: InvoiceResponseDto = await this.paymentService.createInvoice(order.id, Number(order.amount));
+      paymentUrl = invoiceResponseDto.paymentUrl;
     }
 
-    //Отримуєм оновлене замовлення з доставкою та оплатою (якщо оплата створилась)
-    const updatedOrder: OrderEntity =
-      await this.prismaService.order.findUniqueOrThrow({
-        where: { id: createdOrder.id },
+    //Отримуєм оновлене замовлення (з доставкою та оплатою)
+    const updatedOrder: OrderEntity = await this.prismaService.order.findUniqueOrThrow({
+        where: { id: order.id },
         include: orderInclude,
       });
     return OrderMapper.toCheckoutResponseDto(updatedOrder, paymentUrl);
   }
 
-  //Створення ТТН та зміна статусу замовлення на PROCESSING (після оплати або підтвердження менеджером)
+  //Метод для повторного створення інвойсу, якщо попередній не створився, або оплата завершилась помилкою
+  async retryPayment(orderId: string, userId: string): Promise<RetryPaymentResponseDto> {
+    const order: OrderEntity = await this.prismaService.order.findUniqueOrThrow({
+      where: {id: orderId, userId},
+      include: orderInclude
+    });
+
+    if(order.status !== "PENDING") {
+      throw new BadRequestException(`Для замовлення з ID ${orderId} не можливо повторити оплату при поточному статусі. Поточний статус ${order.status}`);
+    }
+
+    if(order.paymentMethod !== "CARD") {
+      throw new BadRequestException(`Для замовлення з ID ${orderId} метод оплати ${order.paymentMethod}. Повторити оплату можна тільки при оплаті карткою`);
+    }
+
+    //Створюємо інвойс для існуючої оплати (без externalId) чи нової оплати (якщо оплати без externalId немає)
+    const invoiceResponseDto = await this.paymentService.createInvoice(orderId, Number(order.amount));
+
+    if(!invoiceResponseDto.paymentUrl) {
+      throw new InternalServerErrorException('При спробі повторної оплати сталась помилка. Спробуйте пізніше');
+    }
+
+    return {paymentUrl: invoiceResponseDto.paymentUrl}
+  }
+
+  //Створення ТТН та зміна статусу замовлення на PROCESSING (після оплати карткою або підтвердження менеджером)
   async initProcessing(orderId: string): Promise<OrderResponseDto> {
     const order: OrderEntity = await this.prismaService.order.findUniqueOrThrow(
       {
@@ -103,27 +112,27 @@ export class OrderService {
 
     //Якщо оплата картою, то перевіряємо чи замовлення оплачене
     if(order.paymentMethod === 'CARD') {
-      let isPaid: boolean = false;
-      for (const payment of order.payments) {
-        if (payment.status === 'PAID') {
-          isPaid = true;
-        }
-      }
+      const payment = await this.paymentService.findPaidByOrderId(orderId);
 
-      if (!isPaid) {
+      if (!payment) {
         throw new BadRequestException(`Неможливо змінити статус замовлення при оплаті карткою, якщо воно не оплачене`,);
       }
     }
 
     const setTrackingNumberDto = OrderMapper.toSetTrackingNumberDto(order);
-    //Генеруємо ТТН
-    await this.deliveryService.setTrackingNumber(setTrackingNumberDto);
-    //Змінюємо статус замовлення на PROCESSING
-    const updatedOrder: OrderEntity = await this.prismaService.order.update({
-      where: { id: orderId },
-      data: { status: 'PROCESSING' },
-      include: orderInclude,
-    });
+    const updatedOrder = await this.prismaService.$transaction(async (tx) => {
+      //Генеруємо ТТН і прописуєм trackingNumber
+      await this.deliveryService.setTrackingNumber(setTrackingNumberDto, tx);
+      //Змінюємо статус замовлення на PROCESSING
+      const updatedOrder: OrderEntity = await tx.order.update({
+        where: { id: orderId },
+        data: { status: 'PROCESSING' },
+        include: orderInclude,
+      });
+      this.logger.log(`В замовленні з ID ${orderId} статус успішно змінено на ${updatedOrder.status}`);
+
+      return updatedOrder;
+    })
 
     return OrderMapper.toOrderResponseDto(updatedOrder);
   }
@@ -198,11 +207,7 @@ export class OrderService {
     );
 
     //Створюємо Prisma.OrderCreateInput
-    const data: OrderCreateInput = OrderMapper.toPrismaOrderCreateInput(
-      userId,
-      cart,
-      dto,
-    );
+    const data: OrderCreateInput = OrderMapper.toPrismaOrderCreateInput(userId, cart, dto);
 
     //Створюємо замовлення
     const order: OrderEntity = await tx.order.create({

@@ -190,6 +190,8 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id]) //onDelete залишаєм по змовчуванню, щоб не видалити товар, який хоч раз замовили
   orderId   String
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, productId])
 }
 
 enum PaymentStatus {
@@ -202,12 +204,14 @@ enum PaymentStatus {
 model Payment {
   id         String        @id @default(uuid(7))
   status     PaymentStatus @default(PENDING)
-  externalId String        @unique //ID інвойсу в платіжній системі
+  externalId String?       @unique //ID інвойсу в платіжній системі
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
   orderId String
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, externalId])
 }
 
 /**

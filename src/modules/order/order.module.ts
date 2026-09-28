@@ -6,11 +6,13 @@ import { DeliveryModule } from '../delivery/delivery.module';
 import { PaymentModule } from '../payment/payment.module';
 import { ProductModule } from '../product/product.module';
 import { AdminOrderController } from './admin-order.controller';
+import { MonobankProvider } from '../payment/infrastructure/monobank.provider';
+import { OrderPaymentListener } from './listeners/order-payment.listener';
 
 
 @Module({
   imports: [CartModule, DeliveryModule, PaymentModule, ProductModule],
   controllers: [AdminOrderController, OrderController],
-  providers: [OrderService]
+  providers: [OrderService, MonobankProvider, OrderPaymentListener]
 })
 export class OrderModule {}
