@@ -10,11 +10,12 @@ import { CheckoutResponseDto } from './dto/checkout-response.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
 import { OrdersResponseDto } from './dto/orders-response.dto';
 import { OrdersQueryDto } from './dto/orders-query.dto';
+import type { RetryPaymentResponseDto } from './dto/retry-payment-response.dto';
 
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
-
+  //Створення замовлення
   @Post()
   @Auth()
   @ApiErrors()
@@ -23,6 +24,27 @@ export class OrderController {
     @CurrentUser() user: ITokenPayload
   ): Promise<CheckoutResponseDto> {
     return await this.orderService.checkout(user.id, dto);
+  }
+  //Повторна спроба створення інвойсу (для існуючої оплати, або, за необхідності, для нової сутності оплати)
+  @Post(':id/retry-payment')
+  @Auth()
+  @ApiErrors()
+  async retryPayment(
+    @Param('id') id: string,
+    @CurrentUser() user: ITokenPayload
+  ): Promise<RetryPaymentResponseDto> {
+    return await this.orderService.retryPayment(id, user.id);
+  }
+
+  //Скасування замовлення (+ повернення коштів при оплаті карткою, якщо статус замовлення PROCESSING)
+  @Patch(':id/cancel')
+  @Auth()
+  @ApiErrors()
+  async cancelOrder(
+    @Param('id') id: string,
+    @CurrentUser() user: ITokenPayload
+  ): Promise<OrderResponseDto> {
+    return await this.orderService.cancelOrder(id, user.id);
   }
 
   @Get()
@@ -45,15 +67,6 @@ export class OrderController {
     return await this.orderService.findOne(id, user.id);
   }
 
-  /*
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(+id, updateOrderDto);
-  }
-   */
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(+id);
-  }
+
 }

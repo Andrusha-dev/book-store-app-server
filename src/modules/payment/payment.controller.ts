@@ -4,6 +4,9 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { ApiErrors } from '../../common/decorators/api-errors.decorator';
 
+
+//Наразі PaymentController не потрібен, бо OrderService виступає оркестратором для PaymentService, а вебхуки обробляються в PaymentWebhookController
+/*
 @Controller('payments')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
@@ -28,3 +31,4 @@ export class PaymentController {
     return this.paymentService.remove(+id);
   }
 }
+*/

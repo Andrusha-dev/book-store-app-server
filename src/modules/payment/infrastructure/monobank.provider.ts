@@ -47,7 +47,7 @@ export class MonobankProvider {
     }
 
     try {
-      const response = await fetch(`${this.monoApiUrl}/merchant/invoice/create`, {
+      const response = await fetch(`${this.monoApiUrl}/api/merchant/invoice/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,6 +78,36 @@ export class MonobankProvider {
     } catch (error) {
       if (error instanceof BadGatewayException) {throw error}
       throw new BadGatewayException('При підключенні до сервера монобанку сталась помилка. Спробуйте пізніше')
+    }
+  }
+
+  async refundPayment(externalId: string, amount: number): Promise<void> {
+    if (this.isSandbox) {
+      //Якщо ми в режимі sandbox, то успішно завершуєм метод
+      return
+    }
+
+    try {
+      const response = await fetch(`${this.monoApiUrl}/api/merchant/invoice/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Token': this.monoApiToken,
+        },
+        body: JSON.stringify({
+          invoiceId: externalId,
+          //Monobank приймає суму в копійках (ціле число), тому множимо на 100
+          amount: Math.round(amount * 100)
+        }),
+      });
+
+      if(!response.ok) {
+        const errorText: string = await response.text();
+        throw new BadGatewayException(errorText, '[MONOBANK_SERVICE_ERROR]: Монобанк відхилив запит на коштів',);
+      }
+    } catch (error) {
+      if (error instanceof BadGatewayException) {throw error}
+      throw new BadGatewayException('При підключенні до сервера монобанку сталась помилка. Спробуйте пізніше',);
     }
   }
 
@@ -112,7 +142,7 @@ export class MonobankProvider {
     }
 
     //Якщо термін дії публічного ключа вийшов, отримуємо публічний ключ через api монобанку
-    const response = await fetch(`${this.monoApiUrl}/merchant/pubkey`, {
+    const response = await fetch(`${this.monoApiUrl}/api/merchant/pubkey`, {
       method: 'GET',
       headers: { 'X-Token': this.monoApiToken },
     });

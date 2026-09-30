@@ -7,7 +7,7 @@ export const appConfigSchema = z.object({
   ALLOWED_ORIGIN: z.url().default('http://localhost:5173'),
   FRONTEND_URL: z.url().default('http://localhost:5173'),
   BACKEND_URL: z.url().default('http://localhost:3000'),
-  MONO_API_URL: z.url().default('https://api.monobank.ua/api'),
+  MONO_API_URL: z.url().default('https://api.monobank.ua'),
   ACCESS_TOKEN_SECRET: z.string().min(20).default('yourAccessTokenSecret'),
   REFRESH_TOKEN_SECRET: z.string().min(20).default('yourRefreshTokenSecret'),
   ACCESS_EXPIRES_IN: z.coerce.number().default(900), //значення в секундах

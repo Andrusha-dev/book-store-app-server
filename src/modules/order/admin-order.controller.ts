@@ -23,11 +23,19 @@ import { OrdersResponseDto } from './dto/orders-response.dto';
 @Auth('ADMIN')
 export class AdminOrderController {
   constructor(private readonly orderService: OrderService) {}
-
+  //Генерація ТТН та зміна статусу замовлення на PROCESSING (при оплаті готівкою, після підтвердження менеджером)
   @Patch(':id/processing')
   @ApiErrors()
   async initProcessing(@Param('id') id: string): Promise<OrderResponseDto> {
-    return await this.orderService.initProcessing(id);
+    return await this.orderService.processOrder(id);
+  }
+  //Скасування замовлення (+ повернення коштів при оплаті карткою, якщо статус замовлення PROCESSING)
+  @Patch(':id/cancel')
+  @ApiErrors()
+  async cancelOrder(
+    @Param('id') id: string
+  ): Promise<OrderResponseDto> {
+    return await this.orderService.cancelOrder(id);
   }
 
   @Get()
@@ -40,9 +48,7 @@ export class AdminOrderController {
 
   @Get(':id')
   @ApiErrors()
-  async findOne(
-    @Param('id') id: string,
-  ): Promise<OrderResponseDto> {
+  async findOne(@Param('id') id: string): Promise<OrderResponseDto> {
     return await this.orderService.findOne(id);
   }
 }

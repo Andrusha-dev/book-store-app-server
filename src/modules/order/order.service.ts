@@ -90,15 +90,16 @@ export class OrderService {
     //Створюємо інвойс для існуючої оплати (без externalId) чи нової оплати (якщо оплати без externalId немає)
     const invoiceResponseDto = await this.paymentService.createInvoice(orderId, Number(order.amount));
 
+    //Пересвідчуємося, що посилання на оплату дійсно є
     if(!invoiceResponseDto.paymentUrl) {
       throw new InternalServerErrorException('При спробі повторної оплати сталась помилка. Спробуйте пізніше');
     }
-
+    //Якщо є, то повертаємо посилання на оплату
     return {paymentUrl: invoiceResponseDto.paymentUrl}
   }
 
   //Створення ТТН та зміна статусу замовлення на PROCESSING (після оплати карткою або підтвердження менеджером)
-  async initProcessing(orderId: string): Promise<OrderResponseDto> {
+  async processOrder(orderId: string): Promise<OrderResponseDto> {
     const order: OrderEntity = await this.prismaService.order.findUniqueOrThrow(
       {
         where: { id: orderId },
@@ -113,7 +114,6 @@ export class OrderService {
     //Якщо оплата картою, то перевіряємо чи замовлення оплачене
     if(order.paymentMethod === 'CARD') {
       const payment = await this.paymentService.findPaidByOrderId(orderId);
-
       if (!payment) {
         throw new BadRequestException(`Неможливо змінити статус замовлення при оплаті карткою, якщо воно не оплачене`,);
       }
@@ -135,6 +135,51 @@ export class OrderService {
     })
 
     return OrderMapper.toOrderResponseDto(updatedOrder);
+  }
+
+  //Метод для скасування замовлення
+  async cancelOrder(id: string, userId?: string): Promise<OrderResponseDto> {
+    const order: OrderEntity = await this.prismaService.order.findFirstOrThrow({
+      where: {id, userId},
+      include: orderInclude
+    });
+
+    //Якщо, при оплаті карткою, замовлення вже оплачене (має статус PROCESSING), то ініціюєм повернення коштів і повертаємо замовлення з поточним статусом PROCESSING
+    //Подальша зміна статусу замовлення буде здійснюватись через обробку вебхуку монобанку після повернення коштів
+    if (order.paymentMethod === 'CARD' && order.status === 'PROCESSING') {
+      await this.paymentService.refundPayment(order.id, Number(order.amount));
+      return OrderMapper.toOrderResponseDto(order);
+    }
+
+    //Якщо оплата не здійснювалась то відразу змінюєм статус замовлення на CANCELLED
+    return await this.updateStatusToCancelled(id);
+  }
+
+  //Метод, який безпосередньо змінює статус замовлення на CANCELLED
+  async updateStatusToCancelled(id: string): Promise<OrderResponseDto> {
+    const order: OrderEntity = await this.prismaService.order.findUniqueOrThrow({
+      where: {id},
+      include: orderInclude
+    });
+    //Якщо замовлення виконане чи скасоване, то скасувати його не можна
+    if(order.status === "COMPLETED" || order.status === "CANCELLED") {
+      throw new BadRequestException(`Не можливо скасувати замовлення з ID ${id}, якщо воно виконане або вже скасоване. Статус замовлення ${order.status}`);
+    }
+    //Перевіряєм чи є повернута оплата, інакше скасовувати замовлення не можна
+    if(order.paymentMethod === "CARD" && order.status === "PROCESSING") {
+      const refundedPayment = await this.paymentService.findRefundedByOrderId(id);
+      if(!refundedPayment) {
+        throw new BadRequestException(`В замовленні з ID ${id} не можливо змінити статус з ${OrderStatus.PROCESSING} на ${OrderStatus.CANCELLED}, при оплаті карткою, якщо оплата не повернута`);
+      }
+    }
+    //І врешті змінюєм статус замовлення на CANCELLED
+    const cancelledOrder: OrderEntity = await this.prismaService.order.update({
+      where: {id},
+      data: {status: "CANCELLED"},
+      include: orderInclude
+    });
+
+    return OrderMapper.toOrderResponseDto(cancelledOrder);
   }
 
   async findMany(queryDto: OrdersQueryDto, userId?: string, ): Promise<OrdersResponseDto> {
@@ -166,10 +211,6 @@ export class OrderService {
     });
 
     return OrderMapper.toOrderResponseDto(order);
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} order`;
   }
 
   private async create(

@@ -76,6 +76,18 @@ export class PaymentService {
     return {paymentUrl}
   }
 
+  //Метод для повернення коштів
+  async refundPayment(orderId: string, amount: number): Promise<void> {
+    //Перевіряєм чи замовлення оплачене
+    const payment = await this.findPaidByOrderId(orderId);
+    if(!payment) {
+      throw new BadRequestException(`Неможливо повернути кошти. Замовлення з ID ${orderId} не оплачене`)
+    }
+
+    //Якщо оплачене, то ініціюєм повернення коштів через провайдера монобанку
+    await this.monobankProvider.refundPayment(payment.id, amount);
+  }
+
   //Метод для оновлення статусу оплати через вебхук
   async updateStatusByWebhook(dto: MonobankWebhookDto): Promise<void> {
     let status: PaymentStatus;
@@ -122,30 +134,25 @@ export class PaymentService {
     }
   }
 
-  findAll() {
-    return `This action returns all payment`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} payment`;
-  }
-
-  update(id: number, updatePaymentDto: UpdatePaymentDto) {
-    return `This action updates a #${id} payment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} payment`;
-  }
-
   //Шукає в замовленні оплачену оплату
   async findPaidByOrderId(orderId: string): Promise<PaymentResponseDto | undefined> {
-    const payment: PaymentEntity | null =
-      await this.prismaService.payment.findFirst({
+    const payment: PaymentEntity | null = await this.prismaService.payment.findFirst({
         where: { orderId, status: 'PAID'}
       });
 
     if (payment) {
+      return PaymentMapper.toResponseDto(payment);
+    }
+
+    return undefined;
+  }
+
+  async findRefundedByOrderId(orderId: string): Promise<PaymentResponseDto | undefined> {
+    const payment: PaymentEntity | null = await this.prismaService.payment.findFirst({
+      where: {orderId, status: "REFUNDED"}
+    });
+
+    if(payment) {
       return PaymentMapper.toResponseDto(payment);
     }
 

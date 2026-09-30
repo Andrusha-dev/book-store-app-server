@@ -4,6 +4,7 @@ import { OrderService } from '../order.service';
 import { PaymentSuccessEvent } from '../../payment/events/payment-success.event';
 import { Logger } from 'nestjs-pino';
 import { PaymentRefundedEvent } from '../../payment/events/payment-refunded.event';
+import { OrderStatus } from '../../../generated/prisma/enums';
 
 @Injectable()
 export class OrderPaymentListener {
@@ -16,14 +17,18 @@ export class OrderPaymentListener {
   @OnEvent("payment.success", {async: true})
   async handlePaymentSuccess(event: PaymentSuccessEvent): Promise<void> {
     try {
-      await this.orderService.initProcessing(event.orderId);
+      await this.orderService.processOrder(event.orderId);
     } catch (error) {
-      this.logger.error({err: error as Error}, "Не вдалось створити ТТН та оновити статус замовлення");
+      this.logger.error({ err: error as Error }, `Для замовлення з ID${event.orderId} не вдалось створити ТТН та оновити статус до ${OrderStatus.PROCESSING}`,);
     }
   }
 
   @OnEvent("payment.refunded", {async: true})
   async handlePaymentRefunded(event: PaymentRefundedEvent): Promise<void> {
-    //Тут буде викликатись метод повернення коштів
+    try {
+      await this.orderService.updateStatusToCancelled(event.orderId);
+    } catch (error) {
+      this.logger.error({ err: error as Error }, `Для замовлення з ID${event.orderId} не вдалось змінити статус на ${OrderStatus.CANCELLED}`,);
+    }
   }
 }
