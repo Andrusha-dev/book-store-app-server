@@ -1,23 +1,17 @@
 import type { CreateOrderDto } from './dto/create-order.dto';
-import { DeliveryMethod, type OrderPaymentMethod, type OrderStatus, Prisma } from '../../generated/prisma/client';
+import { OrderStatus, Prisma } from '../../generated/prisma/client';
 import type { CartItemResponseDto } from '../cart/dto/cart-Item-response.dto';
 import { OrderEntity, OrderItemEntity } from './entities/order.entity';
 import {
   OrderItemResponseDto,
   type OrderResponseDto,
 } from './dto/order-response.dto';
-import type { DeliveryResponseDto } from '../delivery/dto/delivery-response.dto';
-import { PaymentResponseDto } from '../payment/dto/payment-response.dto';
-//import type { OrderItemResponseDto } from './dto/order-item-response.dto';
-import type { ProductBaseResponseDto } from '../product/dto/product-base-response.dto';
 import { ProductMapper } from '../product/product.mapper';
 import { DeliveryMapper } from '../delivery/delivery.mapper';
 import { PaymentMapper } from '../payment/payment.mapper';
 import type { CheckoutResponseDto } from './dto/checkout-response.dto';
 import type { CartResponseDto } from '../cart/dto/cart-response.dto';
-import type { SetTrackingNumberDto } from '../delivery/dto/set-tracking-number.dto';
-import type { CreateDeliveryDto } from '../delivery/dto/create-delivery.dto';
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import type { CreateTrackingNumberDto } from '../delivery/dto/create-tracking-number.dto';
 import type { OrdersQueryDto } from './dto/orders-query.dto';
 
 
@@ -67,26 +61,27 @@ export class OrderMapper {
   }
 
   static toPrismaOrderWhereInput(
-    filters: Omit<OrdersQueryDto, "pageNo" | "pageSize" | "sortOrder" | "sortBy">,
-    userId?: string
+    filters: Omit<
+      OrdersQueryDto,
+      'pageNo' | 'pageSize' | 'sortOrder' | 'sortBy'
+    >,
+    userId?: string,
   ): Prisma.OrderWhereInput {
     const where: Prisma.OrderWhereInput = {
       userId, //Якщо userId не undefined, то здійснюється пошук замовлень користувача, якщо - ні, то - пошук усіх замовлень
-      status: filters.statuses?.length
-        ? {in: filters.statuses}
-        : undefined,
+      status: filters.statuses?.length ? { in: filters.statuses } : undefined,
       paymentMethod: filters.paymentMethods?.length
-        ? {in: filters.paymentMethods}
-        : undefined
-    }
+        ? { in: filters.paymentMethods }
+        : undefined,
+    };
 
     return where;
   }
 
   //Маппінг до SetTrackingNumberDto. Створюється в модулі order, оскільки OrderService виступає оркестратором для генерації ТТН
-  static toSetTrackingNumberDto(order: OrderEntity): SetTrackingNumberDto {
+  static toCreateTrackingNumberDto(order: OrderEntity): CreateTrackingNumberDto {
     const widthMm = order.items.reduce((acc, item) => {
-      return acc < item.product.widthMm ? item.product.widthMm : acc
+      return acc < item.product.widthMm ? item.product.widthMm : acc;
     }, 0);
 
     const heightMm = order.items.reduce((acc, item) => {
@@ -101,7 +96,7 @@ export class OrderMapper {
       return acc + item.product.weightGrams * item.product.quantity;
     }, 0);
 
-    const dto: SetTrackingNumberDto = {
+    const dto: CreateTrackingNumberDto = {
       orderId: order.id,
       paymentMethod: order.paymentMethod,
       amount: Number(order.amount),
@@ -120,8 +115,40 @@ export class OrderMapper {
 
     return dto;
   }
+  //Маппінг внутрішніх статусів нової пошти до бізнес статусів OrderStatus
+  static toOrderStatus(statusValue: string): OrderStatus {
+    let orderStatus: OrderStatus = "PROCESSING";
 
-  private static toOrderItemResponseDto(item: OrderItemEntity): OrderItemResponseDto {
+    switch (statusValue) {
+      //4, 5, 6, 7, 8 - В дорозі/Прибуло у відділення
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+        orderStatus = OrderStatus.DELIVERING;
+        break;
+      //9 - Отримано (успішно)
+      case '9':
+        orderStatus = OrderStatus.COMPLETED;
+        break;
+      //10, 11, 102, 103 - Відмова від отримання/Повернення
+      case '10':
+      case '11':
+      case '102':
+      case '103':
+        orderStatus = OrderStatus.CANCELLED;
+        break;
+      default:
+        orderStatus = OrderStatus.PROCESSING;
+    }
+
+    return orderStatus;
+  }
+
+  private static toOrderItemResponseDto(
+    item: OrderItemEntity,
+  ): OrderItemResponseDto {
     const responseDto: OrderItemResponseDto = {
       id: item.id,
       quantity: item.quantity,
@@ -158,7 +185,10 @@ export class OrderMapper {
     return responseDto;
   }
 
-  static toCheckoutResponseDto(order: OrderEntity, paymentUrl: string | null): CheckoutResponseDto {
+  static toCheckoutResponseDto(
+    order: OrderEntity,
+    paymentUrl: string | null,
+  ): CheckoutResponseDto {
     const responseDto: CheckoutResponseDto = {
       order: OrderMapper.toOrderResponseDto(order),
       paymentUrl,

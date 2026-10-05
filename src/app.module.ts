@@ -19,6 +19,7 @@ import { CartModule } from './modules/cart/cart.module';
 import { OrderModule } from './modules/order/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { DeliveryModule } from './modules/delivery/delivery.module';
+import { ZodExceptionsFilter } from './common/filters/zod-exceptions.filter';
 
 
 
@@ -43,6 +44,10 @@ import { DeliveryModule } from './modules/delivery/delivery.module';
       provide: APP_FILTER,
       useClass: PrismaExceptionsFilter,
     },
+    {
+      provide: APP_FILTER,
+      useClass: ZodExceptionsFilter,
+    }
   ],
 })
 export class AppModule {}

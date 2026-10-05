@@ -205,6 +205,7 @@ export class ProductService {
       data: {quantity: {decrement: quantity}},
       include: productInclude
     });
+    this.logger.log(`Кількість товару з ID${id} успішно зменшено на ${quantity} шт.`,);
 
     return ProductMapper.toResponseDto(updatedProduct);
   }
@@ -220,6 +221,7 @@ export class ProductService {
       },
       include: productInclude
     });
+    this.logger.log(`Кількість товару з ID${id} успішно збільшено на ${quantity} шт.`);
 
     return ProductMapper.toResponseDto(updatedProduct);
   }

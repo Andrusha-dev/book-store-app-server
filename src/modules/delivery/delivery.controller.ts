@@ -10,7 +10,7 @@ export class DeliveryController {
   create(@Body() createDeliveryDto: CreateDeliveryDto) {
     return this.deliveryService.create(createDeliveryDto);
   }
-   */
+
 
   @Get()
   findAll() {
@@ -22,15 +22,16 @@ export class DeliveryController {
     return this.deliveryService.findOne(+id);
   }
 
-  /*
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDeliveryDto: UpdateDeliveryDto) {
     return this.deliveryService.update(+id, updateDeliveryDto);
   }
-   */
+
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.deliveryService.remove(+id);
   }
+   */
 }

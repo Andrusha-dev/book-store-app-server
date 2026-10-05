@@ -1,7 +1,7 @@
 import type { OrderPaymentMethod } from '../../../generated/prisma/enums';
 
 
-export class SetTrackingNumberDto {
+export class CreateTrackingNumberDto {
   readonly orderId: string;
   readonly paymentMethod: OrderPaymentMethod;
   readonly amount: number;

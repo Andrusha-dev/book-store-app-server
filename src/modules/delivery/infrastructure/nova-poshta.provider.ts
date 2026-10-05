@@ -1,12 +1,12 @@
-import type { CreateDeliveryDto } from '../dto/create-delivery.dto';
-import type { OrderResponseDto } from '../../order/dto/order-response.dto';
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from '../../../core/config/app-config.schema';
-import type { OrderPaymentMethod } from '../../../generated/prisma/enums';
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import { OrderPaymentMethod} from '../../../generated/prisma/enums';
+import { BadGatewayException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { z } from 'zod';
+import { Logger } from 'nestjs-pino';
 
 
-export interface ICreateTrackingRequest {
+export interface CreateTrackingRequest {
   readonly paymentMethod: OrderPaymentMethod;
   readonly amount: number;
   readonly recipientFirstname: string;
@@ -23,16 +23,61 @@ export interface ICreateTrackingRequest {
   readonly weightKGrams: number;
 }
 
-interface ICreateTrackingResponse {
-  trackingNumber: string;
-}
+//Контракт даних, що містить номер ТТН під час створення ТТН
+const trackingDataSchema = z.object({
+  IntDocNumber: z.string()
+});
+export type TrackingData = z.infer<typeof trackingDataSchema>;
 
-//Контракт відповіді від НП
-interface INovaPoshtaResponse {
+//Контракт відповіді від НП при створенні ттн
+const createTrackingResponseSchema = z.object({
+  success: z.boolean(),
+  errors: z.array(z.string()),
+  data: z.array(trackingDataSchema)
+});
+type CreateTrackingResponse = z.infer<typeof createTrackingResponseSchema>;
+
+//Контракт, що містить статус доставки при перевірці статусу доставки
+const  trackingStatusItemSchema = z.object({
+  Number: z.string(),
+  StatusCode: z.string()
+});
+export type TrackingStatusItem = z.infer<typeof trackingStatusItemSchema>;
+
+//Контракт відповіді від нової пошти при перевірці статусу доставки
+const trackingStatusResponseSchema  = z.object({
+  success: z.boolean(),
+  errors: z.array(z.string()),
+  data: z.array(trackingStatusItemSchema)
+});
+type TrackingStatusResponse = z.infer<typeof trackingStatusResponseSchema>;
+
+/*
+//Контракт даних, що містить номер ТТН під час створення ТТН
+export interface ITrackingData {
+  IntDocNumber: string;
+}
+//Контракт відповіді від НП при створенні ттн
+interface ICreateTrackingResponse {
   success: boolean;
   errors: string[];
-  data: {IntraDocNumber: string}[] //Якщо ТТН одна, то в масиві буде лише один об'єкт
+  data: ITrackingData[] //Якщо ТТН одна, то в масиві буде лише один об'єкт
 }
+ */
+
+/*
+//Контракт, що містить статус доставки при перевірці статусу доставки
+export interface ITrackingStatusItem {
+  Number: string;
+  StatusCode: string;
+}
+//Контракт відповіді від нової пошти при перевірці статусу доставки
+interface ITrackingStatusResponse {
+  success: boolean;
+  errors: string[];
+  data: ITrackingStatusItem[];
+}
+ */
 
 @Injectable()
 export class NovaPoshtaProvider {
@@ -42,17 +87,22 @@ export class NovaPoshtaProvider {
   private readonly contactSender: string;
   private readonly sendersPhone: string;
   private readonly novaPoshtaUrl: string;
+  private readonly novaPoshtaApiKey: string;
   private readonly maxHeightSm: number;
   private readonly maxWeightKGrams: number;
   private readonly isSandbox: boolean;
 
-  constructor(private readonly configService: ConfigService<AppConfig, true>) {
+  constructor(
+    private readonly configService: ConfigService<AppConfig, true>,
+    private readonly logger: Logger
+  ) {
     this.citySender = configService.get('NP_SENDER_CITY_REF', { infer: true });
     this.sender = configService.get('NP_SENDER_REF', { infer: true });
     this.senderAddress = configService.get('NP_SENDER_WAREHOUSE_REF', { infer: true });
     this.contactSender = configService.get('NP_SENDER_CONTACT_REF', { infer: true });
     this.sendersPhone = configService.get('NP_SENDER_PHONE', { infer: true });
     this.novaPoshtaUrl = configService.get('NP_API_URL', { infer: true });
+    this.novaPoshtaApiKey = configService.get("NP_API_KEY", {infer: true});
     this.maxHeightSm = configService.get('NP_POSTOMAT_MAX_HEIGHT_SM', { infer: true });
     this.maxWeightKGrams = configService.get('NP_POSTOMAT_MAX_WEIGHT_KG', { infer: true });
     this.isSandbox = configService.get('NODE_ENV', {infer: true}) !== "production";
@@ -60,10 +110,10 @@ export class NovaPoshtaProvider {
 
   //Метод для створення ттн доставки замовлення(через api нової пошти)
   async createTracking(
-    request: ICreateTrackingRequest,
-  ): Promise<ICreateTrackingResponse> {
+    request: CreateTrackingRequest,
+  ): Promise<TrackingData> {
     if(this.isSandbox) {
-      return { trackingNumber: `mocked-tracking-number-${crypto.randomUUID()}`};
+      return { IntDocNumber: `mocked-tracking-number-${crypto.randomUUID()}`};
     }
 
     //Дані, які передаються лише, коли оплата готівкою (накладений платіж)
@@ -80,7 +130,7 @@ export class NovaPoshtaProvider {
         : undefined;
 
     const npPayload = {
-      apiKey: this.configService.get('NP_API_KEY', { infer: true }),
+      apiKey: this.novaPoshtaApiKey,
       modelName: 'InternetDocument',
       calledMethod: 'save',
       methodProperties: {
@@ -124,8 +174,7 @@ export class NovaPoshtaProvider {
       },
     };
 
-    const trackingNumber = await this.createTrackingProcess(npPayload);
-    return {trackingNumber}
+    return await this.createTrackingProcess(npPayload);
   }
 
   //Перевіряє, чи метрики замовлення підходять для відправки у поштомат
@@ -138,7 +187,42 @@ export class NovaPoshtaProvider {
     return true;
   }
 
-  private async createTrackingProcess(npPayload: any): Promise<string> {
+  async getTrackingStatusItems(trackingNumbers: string[]): Promise<TrackingStatusItem[]> {
+    //Якщо ми не в продакшені то повертаємо відповідь заглушку, де статуси всіх ТТН - '1', який під час маппінгу до OrderStatus приведеться до PROCESSING
+    if(this.isSandbox) {
+      const trackingStatusItems: TrackingStatusItem[] = [];
+
+      for (const trackingNumber of trackingNumbers) {
+        const trackingStatusItem: TrackingStatusItem = {
+          Number: trackingNumber,
+          StatusCode: "1"
+        }
+
+        trackingStatusItems.push(trackingStatusItem);
+      }
+
+      return trackingStatusItems;
+    }
+
+    //Нова пошта дозволяє передавати документи масивом у метод getDocumentStatusDocuments
+    const documents = trackingNumbers.map(ttn => {
+      return { DocumentNumber: ttn }
+    });
+    //Тіло запиту
+    const npPayload = {
+      apiKey: this.novaPoshtaApiKey,
+      modelName: 'InternetDocument',
+      calledMethod: 'getDocumentStatusDocuments',
+      methodProperties: {
+        Documents: documents,
+      }
+    }
+
+    return await this.getTrackingStatusItemsProcess(npPayload);
+  }
+
+  //приватний метод для безпосереднього запиту на створення ТТН (викликається безпосередньо в createTracking)
+  private async createTrackingProcess(npPayload: any): Promise<TrackingData> {
     try {
       const response = await fetch(`${this.novaPoshtaUrl}/v2.0/json/`, {
         method: 'POST',
@@ -152,19 +236,52 @@ export class NovaPoshtaProvider {
         throw new BadGatewayException('Сервіс "Нова пошта" відхилив запит');
       }
 
-      const result = (await response.json()) as INovaPoshtaResponse;
+      //Розпарсюєм отримані дані і валідуємо їх
+      const result = await response.json() as unknown;
+      const validatedResult: CreateTrackingResponse = createTrackingResponseSchema.parse(result);
 
-      //При помилках валідації, НП повертає статус 200, тому обовязково перевіряєм поле success
-      if (!result.success) {
+      //При помилках валідації на стороні НП, НП все одно повертає статус 200, тому обовязково перевіряєм поле success
+      if (!validatedResult.success) {
         //Перетворюємо отриману помилку в рядок і генеруєм помилку
-        const errorMessage = result.errors.join(', ');
+        const errorMessage = validatedResult.errors.join(', ');
         throw new BadGatewayException(`Помилка створення ТТН: ${errorMessage}`);
       }
 
-      //Якщо помилки немає - витягуємо номер ТТН
-      return result.data[0].IntraDocNumber;
+      //Витягуємо перший елемент в масиві (бо ми створили лише одну ТТН)
+      return validatedResult.data[0];
     } catch (error) {
-      if (error instanceof BadGatewayException) {throw error}
+      if (error instanceof BadGatewayException || error instanceof z.ZodError) {throw error}
+      throw new BadGatewayException('При підключенні до серверу нової пошти сталася помилка. Спробуйте пізніше');
+    }
+  }
+
+  private async getTrackingStatusItemsProcess(npPayload: any): Promise<TrackingStatusItem[]> {
+    try {
+      const response = await fetch(`${this.novaPoshtaUrl}/v2.0/json/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(npPayload),
+      });
+
+      if (!response.ok) {
+        throw new BadGatewayException(`API нової пошти відхилив запит`);
+      }
+
+      const result = await response.json() as unknown;
+      const validatedResult: TrackingStatusResponse = trackingStatusResponseSchema.parse(result);
+
+      //При помилках валідації, НП повертає статус 200, тому обовязково перевіряєм поле success
+      if (!validatedResult.success) {
+        //Перетворюємо отриману помилку в рядок і генеруєм помилку
+        const errorMessage = validatedResult.errors.join(', ');
+        throw new BadGatewayException(`Помилка API нової пошти при отриманні статусів ТТН: ${errorMessage}`);
+      }
+      //Повертаємо масив обєктів зі статусами ТТН
+      return validatedResult.data;
+    } catch (error) {
+      if(error instanceof BadGatewayException) {throw error}
       throw new BadGatewayException('При підключенні до серверу нової пошти сталася помилка. Спробуйте пізніше');
     }
   }

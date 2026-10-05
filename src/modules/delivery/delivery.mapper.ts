@@ -1,9 +1,13 @@
-import { type DeliveryMethod, type OrderPaymentMethod, Prisma } from '../../generated/prisma/client';
+import { Prisma } from '../../generated/prisma/client';
 import type { DeliveryEntity } from './entities/delivery.entity';
 import type { DeliveryResponseDto } from './dto/delivery-response.dto';
 import type { CreateDeliveryDto } from './dto/create-delivery.dto';
-import type { SetTrackingNumberDto } from './dto/set-tracking-number.dto';
-import type { ICreateTrackingRequest } from './infrastructure/nova-poshta.provider';
+import type { CreateTrackingNumberDto } from './dto/create-tracking-number.dto';
+import type {
+  CreateTrackingRequest,
+  TrackingStatusItem,
+} from './infrastructure/nova-poshta.provider';
+import type { TrackingStatusItemResponseDto } from './dto/tracking-status-item-response.dto';
 
 
 export class DeliveryMapper {
@@ -25,8 +29,8 @@ export class DeliveryMapper {
     return data;
   }
 
-  static toICreateTrackingRequest(dto: SetTrackingNumberDto): ICreateTrackingRequest{
-    const request: ICreateTrackingRequest = {
+  static toCreateTrackingRequest(dto: CreateTrackingNumberDto): CreateTrackingRequest{
+    const request: CreateTrackingRequest = {
       paymentMethod: dto.paymentMethod,
       amount: dto.amount,
       recipientFirstname: dto.recipientFirstname,
@@ -61,6 +65,15 @@ export class DeliveryMapper {
       createdAt: delivery.createdAt,
       updatedAt: delivery.updatedAt,
       orderId: delivery.orderId
+    }
+
+    return responseDto;
+  }
+  //Маппінг до обєкта, що містить номер ТТН та статус цієї ттн (який визначений новою поштою)
+  static toTrackingStatusItemResponseDto(item: TrackingStatusItem): TrackingStatusItemResponseDto {
+    const responseDto: TrackingStatusItemResponseDto = {
+      trackingNumber: item.Number,
+      statusValue: item.StatusCode
     }
 
     return responseDto;
