@@ -167,7 +167,7 @@ export class NovaPoshtaProvider {
       for (const trackingNumber of trackingNumbers) {
         const trackingStatusItem: TrackingStatusItem = {
           Number: trackingNumber,
-          StatusCode: "4"
+          StatusCode: "1" //В пісочниці повертаєм статус "1", а в маппері він взагалі не має бути передбачений, тому не викликатиме зміни статусу замовлення
         }
 
         trackingStatusItems.push(trackingStatusItem);
