@@ -20,6 +20,13 @@ import type { OrdersQueryDto } from './dto/orders-query.dto';
 import type { OrdersResponseDto } from './dto/orders-response.dto';
 import { PageMetaDto } from '../../common/dto/page-meta.dto';
 import type { RetryPaymentResponseDto } from './dto/retry-payment-response.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserService } from '../user/user.service';
+import { OrderCreatedEvent } from './events/order-created.event';
+import { OrderProcessingEvent } from './events/order-processing.event';
+import { OrderCancelledEvent } from './events/order-cancelled.event';
+import { OrderDeliveringEvent } from './events/order-delivering.event';
+import { OrderCompletedEvent } from './events/order-completed.event';
 
 @Injectable()
 export class OrderService {
@@ -29,7 +36,9 @@ export class OrderService {
     private readonly productService: ProductService,
     private readonly deliveryService: DeliveryService,
     private readonly paymentService: PaymentService,
+    private readonly userService: UserService,
     private readonly logger: Logger,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   async checkout(
@@ -53,18 +62,24 @@ export class OrderService {
       return order;
     });
 
+    //Генеруємо подію створення замовлення
+    try {
+      const user = await this.userService.findOne(order.userId);
+      this.eventEmitter.emit("order.created", new OrderCreatedEvent(order.id, user.email));
+    } catch (error) {
+      this.logger.error({err: error as Error}, `При спробі знайти користувача з ID ${order.userId} сталася помилка`);
+    }
+
     let paymentUrl: string | null = null;
 
     if (order.paymentMethod === 'CARD') {
       //Створюємо інвойс для первинної оплати. Створюється по-за блоком транзакцій, щоб платіжний сервер не гальмував виконання транзакцій
-      const invoiceResponseDto: InvoiceResponseDto =
-        await this.paymentService.createInvoice(order.id, Number(order.amount));
+      const invoiceResponseDto: InvoiceResponseDto = await this.paymentService.createInvoice(order.id, Number(order.amount));
       paymentUrl = invoiceResponseDto.paymentUrl;
     }
 
     //Отримуєм оновлене замовлення (з доставкою та оплатою)
-    const updatedOrder: OrderEntity =
-      await this.prismaService.order.findUniqueOrThrow({
+    const updatedOrder: OrderEntity = await this.prismaService.order.findUniqueOrThrow({
         where: { id: order.id },
         include: orderInclude,
       });
@@ -84,15 +99,11 @@ export class OrderService {
     );
 
     if (order.status !== 'PENDING') {
-      throw new BadRequestException(
-        `Для замовлення з ID ${orderId} не можливо повторити оплату при поточному статусі. Поточний статус ${order.status}`,
-      );
+      throw new BadRequestException(`Для замовлення з ID ${orderId} не можливо повторити оплату при поточному статусі. Поточний статус ${order.status}`);
     }
 
     if (order.paymentMethod !== 'CARD') {
-      throw new BadRequestException(
-        `Для замовлення з ID ${orderId} метод оплати ${order.paymentMethod}. Повторити оплату можна тільки при оплаті карткою`,
-      );
+      throw new BadRequestException(`Для замовлення з ID ${orderId} метод оплати ${order.paymentMethod}. Повторити оплату можна тільки при оплаті карткою`);
     }
 
     //Створюємо інвойс для існуючої оплати (без externalId) чи нової оплати (якщо оплати без externalId немає)
@@ -121,49 +132,46 @@ export class OrderService {
     );
     //Первіряєм, чи замовлення має статус PENDING
     if (order.status !== 'PENDING') {
-      throw new BadRequestException(
-        `Неможливо змінити статус замовлення. Поточний статус ${order.status}`,
-      );
+      throw new BadRequestException(`Неможливо змінити статус замовлення. Поточний статус ${order.status}`);
     }
 
     //Якщо оплата картою, то перевіряємо чи замовлення оплачене
     if (order.paymentMethod === 'CARD') {
       const payment = await this.paymentService.findPaidByOrderId(orderId);
       if (!payment) {
-        throw new BadRequestException(
-          `Неможливо змінити статус замовлення при оплаті карткою, якщо воно не оплачене`,
-        );
+        throw new BadRequestException(`Неможливо змінити статус замовлення при оплаті карткою, якщо воно не оплачене`,);
       }
     }
 
     const setTrackingNumberDto = OrderMapper.toCreateTrackingNumberDto(order);
     //Генеруєм ТТН
-    const trackingNumber =
-      await this.deliveryService.createTrackingNumber(setTrackingNumberDto);
+    const trackingNumber = await this.deliveryService.createTrackingNumber(setTrackingNumberDto);
     const updatedOrder = await this.prismaService.$transaction(async (tx) => {
       //Оновлюєм trackingNumber доставки отриманим значенням ТТН
-      await this.deliveryService.updateTrackingNumberByOrderId(
-        orderId,
-        trackingNumber,
-        tx,
-      );
+      await this.deliveryService.updateTrackingNumberByOrderId(orderId, trackingNumber, tx);
       //Змінюємо статус замовлення на PROCESSING
       const updatedOrder: OrderEntity = await tx.order.update({
         where: { id: orderId },
         data: { status: 'PROCESSING' },
         include: orderInclude,
       });
-      this.logger.log(
-        `В замовленні з ID ${orderId} статус успішно змінено на ${updatedOrder.status}`,
-      );
+      this.logger.log(`В замовленні з ID ${orderId} статус успішно змінено на ${updatedOrder.status}`,);
 
       return updatedOrder;
     });
 
+    //Генеруємо подію збирання замовлення
+    try {
+      const user = await this.userService.findOne(updatedOrder.userId);
+      this.eventEmitter.emit("order.processing", new OrderProcessingEvent(updatedOrder.id, user.email));
+    } catch (error) {
+      this.logger.error({ err: error as Error }, `При спробі знайти користувача з ID ${updatedOrder.userId} сталася помилка`,);
+    }
+
     return OrderMapper.toOrderResponseDto(updatedOrder);
   }
 
-  //Метод для скасування замовлення
+  //Метод для ініціації скасування замовлення
   async cancelOrder(id: string, userId?: string): Promise<OrderResponseDto> {
     const order: OrderEntity = await this.prismaService.order.findFirstOrThrow({
       where: { id, userId },
@@ -221,19 +229,21 @@ export class OrderService {
       return updatedOrder;
     });
 
+    //Генеруємо подію скасування замовлення
+    try {
+      const user = await this.userService.findOne(cancelledOrder.userId);
+      this.eventEmitter.emit("order.cancelled", new OrderCancelledEvent(cancelledOrder.id, user.email));
+    } catch (error) {
+      this.logger.error({ err: error as Error }, `При спробі знайти користувача з ID ${cancelledOrder.userId} сталася помилка`,);
+    }
+
     return OrderMapper.toOrderResponseDto(cancelledOrder);
   }
 
-  async findMany(
-    queryDto: OrdersQueryDto,
-    userId?: string,
-  ): Promise<OrdersResponseDto> {
+  async findMany(queryDto: OrdersQueryDto, userId?: string): Promise<OrdersResponseDto> {
     const { pageNo, pageSize, sortOrder, sortBy, ...filters } = queryDto;
 
-    const where: Prisma.OrderWhereInput = OrderMapper.toPrismaOrderWhereInput(
-      filters,
-      userId,
-    );
+    const where: Prisma.OrderWhereInput = OrderMapper.toPrismaOrderWhereInput(filters, userId);
 
     const [orders, totalElements] = await Promise.all([
       this.prismaService.order.findMany({
@@ -259,45 +269,6 @@ export class OrderService {
     });
 
     return OrderMapper.toOrderResponseDto(order);
-  }
-
-  //Синхронізація статусу замовлення зі статусом нової пошти (використовується в cron процесі або може викликатись вручну адміном через відповідний маршрут)
-  async syncOrderStatusesWithDelivery(): Promise<void> {
-    //Шукаємо замовлення зі поточними статусами PROCESSING та DELIVERING
-    const orders: OrderEntity[] = await this.prismaService.order.findMany({
-      where: {
-        status: { in: [OrderStatus.PROCESSING, OrderStatus.DELIVERING] },
-      },
-      include: orderInclude,
-    });
-    //Отримуєм номера ТТН через ассерцію !, адже замовлення має статус PROCESSING лише при фактичній наявності ТТН в доставці
-    const trackingNumbers = orders.map(order => order.delivery!.trackingNumber!);
-    //Отримуємо обєкти з номерами ТТН та статусами доставки для них
-    const trackingStatusItems = await this.deliveryService.getTrackingStatusItems(trackingNumbers);
-    this.logger.log(trackingStatusItems);
-
-    for (const item of trackingStatusItems) {
-      //Мапимо внутрішній статус нової пошти до OrderStatus
-      const necessaryStatus: OrderStatus = OrderMapper.toOrderStatus(item.statusValue);
-      //Шукаєм необхіднеу доставку по номеру ТТН
-      const delivery = await this.deliveryService.findOneByTrackingNumber(item.trackingNumber);
-      //Знаходим замовлення, якому належить ця доставка
-      const order: OrderEntity = await this.prismaService.order.findUniqueOrThrow({
-          where: { id: delivery.orderId },
-          include: orderInclude,
-        });
-      //Перевіряємо, чи відповідає поточний статус замовлення необхідному статусу. Якщо ні, то оновлюєм статус замовлення до актуального
-      if (order.status !== necessaryStatus) {
-        const updatedOrder: OrderEntity = await this.prismaService.order.update(
-          {
-            where: { id: order.id },
-            data: { status: necessaryStatus },
-            include: orderInclude,
-          },
-        );
-        this.logger.log(`Для замовлення з ID${updatedOrder.id} змінено статус на ${updatedOrder.status}`);
-      }
-    }
   }
 
   //Приватний метод для безпосереднього створення замовлення (викликається в checkout())
@@ -350,5 +321,118 @@ export class OrderService {
     this.logger.log(`Замовлення з id ${order.id} успішно створено`);
 
     return order;
+  }
+
+  //МЕТОДИ ДЛЯ СИНХРОНІЗАЦІЇ ДАНИХ ЗАМОВЛЕННЯ З ІНШИМИ ДАНИМИ (ОПЛАТОЮ, ДОСТАВКОЮ І Т.Д.) У ФОНОВОМУ СЕРВІСІ ПО ТАЙМЕРУ
+
+  //Синхронізація статусу замовлення зі статусом нової пошти (використовується в cron процесі або може викликатись вручну адміном через відповідний маршрут)
+  async syncOrderWithDelivery(): Promise<void> {
+    //Шукаємо замовлення зі поточними статусами PROCESSING та DELIVERING
+    const orders: OrderEntity[] = await this.prismaService.order.findMany({
+      where: {
+        status: { in: [OrderStatus.PROCESSING, OrderStatus.DELIVERING] },
+      },
+      include: orderInclude,
+    });
+    //Отримуєм номера ТТН через ассерцію !, адже замовлення має статус PROCESSING лише при фактичній наявності ТТН в доставці
+    const trackingNumbers = orders.map(order => order.delivery!.trackingNumber!);
+    //Отримуємо обєкти з номерами ТТН та статусами доставки для них
+    const trackingStatusItems = await this.deliveryService.getTrackingStatusItems(trackingNumbers);
+
+    for (const item of trackingStatusItems) {
+      //Мапимо внутрішній статус нової пошти до OrderStatus
+      const necessaryStatus: OrderStatus = OrderMapper.toOrderStatus(item.statusValue);
+      //Шукаєм необхіднеу доставку по номеру ТТН
+      const delivery = await this.deliveryService.findOneByTrackingNumber(item.trackingNumber);
+      //Знаходим замовлення, якому належить ця доставка
+      const order: OrderEntity = await this.prismaService.order.findUniqueOrThrow({
+        where: { id: delivery.orderId },
+        include: orderInclude,
+      });
+      //Перевіряємо, чи відповідає поточний статус замовлення необхідному статусу. Якщо ні, то оновлюєм статус замовлення до актуального
+      if (order.status !== necessaryStatus) {
+        const updatedOrder: OrderEntity = await this.prismaService.order.update(
+          {
+            where: { id: order.id },
+            data: { status: necessaryStatus },
+            include: orderInclude,
+          },
+        );
+        //Генеруємо подію, залежно від нового статусу замовлення
+        try {
+          const user = await this.userService.findOne(updatedOrder.userId);
+          switch (updatedOrder.status) {
+            case "DELIVERING":
+              this.eventEmitter.emit('order.delivering', new OrderDeliveringEvent(updatedOrder.id, user.email));
+              break;
+            case "CANCELLED":
+              this.eventEmitter.emit('order.cancelled', new OrderCancelledEvent(updatedOrder.id, user.email));
+              break;
+            case "COMPLETED":
+              this.eventEmitter.emit('order.completed', new OrderCompletedEvent(updatedOrder.id, user.email));
+          }
+        } catch (error) {
+          this.logger.error({ err: error as Error }, `При спробі знайти користувача з ID ${updatedOrder.userId} сталася помилка`,);
+        }
+
+        this.logger.log(`Для замовлення з ID${updatedOrder.id} змінено статус на ${updatedOrder.status}`);
+      }
+    }
+  }
+
+  //Синхронізація статусу замовлення зі статусом оплаченої оплати
+  async syncOrderWithPaidPayment(): Promise<void> {
+    //Шукаєм замовлення зі статусом PENDING
+    const orders: OrderEntity[] = await this.prismaService.order.findMany({
+      where: { status: "PENDING"},
+      include: orderInclude
+    });
+
+    for (const order of orders) {
+      //Перевіряєм чи для цих замовлень є оплачені оплати
+      const paidPayment = await this.paymentService.findPaidByOrderId(order.id);
+      //Якщо є, то генеруєм ТТН та змінюєм статус замовлення на PROCESSING
+      if(paidPayment) {
+        await this.processOrder(order.id);
+      }
+    }
+  }
+
+  //Синхронізація статусу замовлення зі статусом повернутої оплати
+  async syncOrderWithRefundedPayment(): Promise<void> {
+    //Шукаєм замовлення зі статусом PROCESSING
+    const orders: OrderEntity[] = await this.prismaService.order.findMany({
+      where: { status: 'PROCESSING' },
+      include: orderInclude,
+    });
+
+    for (const order of orders) {
+      //Перевіряєм чи для цих замовлень є повернуті оплати
+      const refundedPayment = await this.paymentService.findRefundedByOrderId(order.id,);
+      //Якщо є, то змінюєм статус замовлення на CANCELLED і повертаєм товар на склад
+      if (refundedPayment) {
+        await this.updateStatusToCancelled(order.id);
+      }
+    }
+  }
+
+  //Скасування прострочених замовлень (Якщо вони мають статус PENDING більше визначеного часу після створення замовлення)
+  async cancelExpiredOrders(): Promise<void> {
+    //Створюєм дату, при якій замволення скасовується, якщо дата створення замовлення менша/рівна цій даті
+    const oneDayAgo: Date = new Date(Date.now() - (24 * 60 * 60 * 1000));
+
+    //Шукаєм замовлення зі статусом PENDING, які створені більш ніж добу тому
+    const orders: OrderEntity[] = await this.prismaService.order.findMany({
+      where: {
+        status: "PENDING",
+        createdAt: {lte: oneDayAgo}
+      },
+      include: orderInclude
+    });
+
+    //Якщо такі замовлення є, то зиінюєм статус замовлення на CANCELLED і повертаєм товар на склад
+    for(const order of orders) {
+      await this.updateStatusToCancelled(order.id)
+    }
   }
 }

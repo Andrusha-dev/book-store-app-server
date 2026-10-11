@@ -3,12 +3,16 @@ import { ConfigService } from '@nestjs/config';
 import type { AppConfig } from '../../../core/config/app-config.schema';
 import { BadGatewayException, Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
+import { z } from 'zod';
 
 
-export interface CreateInvoiceResponse {
-  invoiceId: string;
-  pageUrl: string; //Лінк на оплату
-}
+const createInvoiceResponseSchema = z.object({
+  invoiceId: z.string(),
+  pageUrl: z.string()//Лінк на оплату
+});
+export type CreateInvoiceResponse = z.infer<typeof createInvoiceResponseSchema>;
+
+
 
 @Injectable()
 export class MonobankProvider {
@@ -34,10 +38,7 @@ export class MonobankProvider {
   }
 
   //Метод для отримання інвойсу від монобанку
-  createInvoice = async (
-    orderId: string,
-    amount: number
-  ): Promise<CreateInvoiceResponse> => {
+  createInvoice = async (orderId: string, amount: number): Promise<CreateInvoiceResponse> => {
     if (this.isSandbox) {
       //Якщо ми в режимі sandbox, то повертаємо результат-заглушку
       return {
@@ -72,9 +73,9 @@ export class MonobankProvider {
       }
 
       //Розпарсюємо дані від Моно
-      const output: CreateInvoiceResponse = await response.json() as CreateInvoiceResponse;
-
-      return output;
+      const rawResponse = await response.json() as unknown;
+      //Повертаємо результат, попередньо звалідувавши його
+      return createInvoiceResponseSchema.parse(rawResponse);
     } catch (error) {
       if (error instanceof BadGatewayException) {throw error}
       throw new BadGatewayException('При підключенні до сервера монобанку сталась помилка. Спробуйте пізніше')
@@ -103,7 +104,7 @@ export class MonobankProvider {
 
       if(!response.ok) {
         const errorText: string = await response.text();
-        throw new BadGatewayException(errorText, '[MONOBANK_SERVICE_ERROR]: Монобанк відхилив запит на коштів',);
+        throw new BadGatewayException(errorText, '[MONOBANK_PROVIDER_ERROR]: Монобанк відхилив запит на коштів',);
       }
     } catch (error) {
       if (error instanceof BadGatewayException) {throw error}

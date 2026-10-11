@@ -12,7 +12,7 @@ import type { AppConfig } from '../config/app-config.schema';
       imports: [AppConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService<AppConfig, true>) => {
-        const isProduction = configService.get('NODE_ENV', { infer: true }) === 'production';
+        const isProduction = configService.get<AppConfig["NODE_ENV"]>('NODE_ENV') === 'production';
 
         return {
           pinoHttp: {

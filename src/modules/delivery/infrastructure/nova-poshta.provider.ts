@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from '../../../core/config/app-config.schema';
 import { OrderPaymentMethod} from '../../../generated/prisma/enums';
-import { BadGatewayException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { z } from 'zod';
 import { Logger } from 'nestjs-pino';
 
@@ -51,33 +51,6 @@ const trackingStatusResponseSchema  = z.object({
   data: z.array(trackingStatusItemSchema)
 });
 type TrackingStatusResponse = z.infer<typeof trackingStatusResponseSchema>;
-
-/*
-//Контракт даних, що містить номер ТТН під час створення ТТН
-export interface ITrackingData {
-  IntDocNumber: string;
-}
-//Контракт відповіді від НП при створенні ттн
-interface ICreateTrackingResponse {
-  success: boolean;
-  errors: string[];
-  data: ITrackingData[] //Якщо ТТН одна, то в масиві буде лише один об'єкт
-}
- */
-
-/*
-//Контракт, що містить статус доставки при перевірці статусу доставки
-export interface ITrackingStatusItem {
-  Number: string;
-  StatusCode: string;
-}
-//Контракт відповіді від нової пошти при перевірці статусу доставки
-interface ITrackingStatusResponse {
-  success: boolean;
-  errors: string[];
-  data: ITrackingStatusItem[];
-}
- */
 
 @Injectable()
 export class NovaPoshtaProvider {
@@ -179,7 +152,6 @@ export class NovaPoshtaProvider {
 
   //Перевіряє, чи метрики замовлення підходять для відправки у поштомат
   canSendToPostomat(weightKGrams: number, heightSm: number): boolean {
-    console.log(`weightKGrams: ${weightKGrams}, heightSm: ${heightSm}`);
     if (this.maxWeightKGrams < weightKGrams || this.maxHeightSm < heightSm) {
       return false;
     }
@@ -195,7 +167,7 @@ export class NovaPoshtaProvider {
       for (const trackingNumber of trackingNumbers) {
         const trackingStatusItem: TrackingStatusItem = {
           Number: trackingNumber,
-          StatusCode: "1"
+          StatusCode: "4"
         }
 
         trackingStatusItems.push(trackingStatusItem);

@@ -61,10 +61,7 @@ export class OrderMapper {
   }
 
   static toPrismaOrderWhereInput(
-    filters: Omit<
-      OrdersQueryDto,
-      'pageNo' | 'pageSize' | 'sortOrder' | 'sortBy'
-    >,
+    filters: Omit<OrdersQueryDto, 'pageNo' | 'pageSize' | 'sortOrder' | 'sortBy'>,
     userId?: string,
   ): Prisma.OrderWhereInput {
     const where: Prisma.OrderWhereInput = {

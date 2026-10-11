@@ -5,6 +5,7 @@ import type { AppConfig } from './core/config/app-config.schema';
 import { Logger } from 'nestjs-pino';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import { initSwagger } from './swagger';
 
 
 
@@ -19,7 +20,7 @@ async function bootstrap() {
   const logger = app.get(Logger);
   const configService = app.get<ConfigService<AppConfig, true>>(ConfigService);
   //Динамічно дістаємо порт, який пройшов перевірку zod
-  const port = configService.get('PORT', { infer: true });
+  const port = configService.get<AppConfig["PORT"]>('PORT');
 
   //Підключаєм cookieParser (для зчитування http-only cookie)
   app.use(cookieParser());
@@ -34,19 +35,8 @@ async function bootstrap() {
   });
   //Встановлюємо глобальний префікс маршрутів для версіонування API
   app.setGlobalPrefix('api/v1');
-
-  //Налаштування Swagger (достатньо 5 рядків)
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Bookstore API')
-    .setDescription('REST API для інтернет-магазину книг')
-    .setVersion('1.0')
-    .addBearerAuth() // Якщо надалі буде JWT авторизація
-    .build();
-
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  // Перший аргумент 'api/docs' — це URL шлях, за яким буде доступний Swagger UI
-  SwaggerModule.setup('api/v1/docs', app, document);
-  logger.log(`Swagger documentation is available on: http://localhost:${port}/api/docs`);
+  //Ініціюєм swagger
+  initSwagger(app);
 
   await app.listen(port);
   logger.log(`Bookstore API is running on: http://localhost:${port}/api/v1`);

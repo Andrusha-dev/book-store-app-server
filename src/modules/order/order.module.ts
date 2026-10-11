@@ -9,10 +9,11 @@ import { AdminOrderController } from './admin-order.controller';
 //import { MonobankProvider } from '../payment/infrastructure/monobank.provider';
 import { OrderPaymentListener } from './listeners/order-payment.listener';
 import { OrderCronService } from './order-cron.service';
+import { UserModule } from '../user/user.module';
 
 
 @Module({
-  imports: [CartModule, DeliveryModule, PaymentModule, ProductModule],
+  imports: [CartModule, DeliveryModule, PaymentModule, ProductModule, UserModule],
   controllers: [AdminOrderController, OrderController],
   providers: [OrderService, OrderPaymentListener, OrderCronService]
 })

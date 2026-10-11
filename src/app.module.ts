@@ -20,11 +20,12 @@ import { OrderModule } from './modules/order/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { DeliveryModule } from './modules/delivery/delivery.module';
 import { ZodExceptionsFilter } from './common/filters/zod-exceptions.filter';
+import { NotificationModule } from './infrastructure/notification/notification.module';
 
 
 
 @Module({
-  imports: [CoreModule, UserModule, AuthModule, ProductModule, CategoryModule, AuthorModule, PublisherModule, CartModule, OrderModule, PaymentModule, DeliveryModule],
+  imports: [CoreModule, NotificationModule, UserModule, AuthModule, ProductModule, CategoryModule, AuthorModule, PublisherModule, CartModule, OrderModule, PaymentModule, DeliveryModule],
   controllers: [AppController],
   providers: [
     AppService,

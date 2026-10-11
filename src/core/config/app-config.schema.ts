@@ -16,6 +16,9 @@ export const appConfigSchema = z.object({
   NP_API_URL: z.string().default('https://api.novaposhta.ua'),
   NP_POSTOMAT_MAX_WEIGHT_KG: z.coerce.number().default(20),
   NP_POSTOMAT_MAX_HEIGHT_SM: z.coerce.number().default(60),
+  SMTP_HOST: z.string().default("sandbox.smtp.mailtrap.io"),
+  SMTP_PORT: z.coerce.number().int().default(2525),
+  SMTP_FROM: z.string().default("Book store <no-reply@book-store.com>"),
 
 
   //Мають бути обовязково прописані в .env, незалежно від значення process.env.NODE_ENV
@@ -28,7 +31,9 @@ export const appConfigSchema = z.object({
   NP_SENDER_REF: z.string(),
   NP_SENDER_WAREHOUSE_REF: z.string(),
   NP_SENDER_CONTACT_REF: z.string(),
-  NP_SENDER_PHONE: z.string()
+  NP_SENDER_PHONE: z.string(),
+  SMTP_USER: z.string(),
+  SMTP_PASS: z.string(),
 });
 
 export type AppConfig = z.infer<typeof appConfigSchema>;
