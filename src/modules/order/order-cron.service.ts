@@ -15,7 +15,7 @@ export class OrderCronService {
 
 
   //Синхронізація замовлень із статусами перевізника
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_HOUR)
   async handleSyncOrderWithDelivery(): Promise<void> {
     try {
       await this.orderService.syncOrderWithDelivery();
@@ -28,7 +28,7 @@ export class OrderCronService {
   }
 
   //Скасування прострочених замовлень з попередньою синхронізацією замовлень з оплаченими оплатами
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_HOUR)
   async handleCancelExpiredOrder(): Promise<void> {
     try {
       //Перед скасуванням прострочених замовлень слід обовязково синхронізувати замовлення із оплаченими оплатами, щоб випадково не скасувати оплачене замовлення
@@ -43,7 +43,7 @@ export class OrderCronService {
   }
 
   //Синхронізація замовлень з повернутими оплатами
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_HOUR)
   async handleSyncOrderWithRefundedPayment(): Promise<void> {
     try {
       //Синхронізуємо замовлення з повернутими оплатами

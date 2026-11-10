@@ -10,7 +10,7 @@ export const appConfigSchema = z.object({
   MONO_API_URL: z.url().default('https://api.monobank.ua'),
   ACCESS_TOKEN_SECRET: z.string().min(20).default('yourAccessTokenSecret'),
   REFRESH_TOKEN_SECRET: z.string().min(20).default('yourRefreshTokenSecret'),
-  ACCESS_EXPIRES_IN: z.coerce.number().default(900), //значення в секундах
+  ACCESS_EXPIRES_IN: z.coerce.number().default(60), //значення в секундах
   REFRESH_EXPIRES_IN: z.coerce.number().default(1209600), //значення в секундах
   GOOGLE_CALLBACK_URL: z.string().default('http://localhost:3000/api/v1/auth/google/callback'),
   NP_API_URL: z.string().default('https://api.novaposhta.ua'),

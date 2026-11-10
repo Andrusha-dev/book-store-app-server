@@ -110,13 +110,12 @@ export class AuthController {
   }
 
   private setRefreshTokenCookie(res: Response, token: string) {
-    const isProduction =
-      this.configService.get('NODE_ENV', { infer: true }) === 'production';
+    const isProduction = this.configService.get('NODE_ENV', { infer: true }) === 'production';
 
     res.cookie('refreshToken', token, {
       httpOnly: true, //Захист від XSS (JS у браузері не має доступу)
       secure: isProduction, // Тільки по HTTPS у продакшені
-      sameSite: 'lax', //Захист від CSRF
+      sameSite: isProduction ? 'none' : 'lax', //Захист від CSRF, lax вимагає однаковий url клієнта і сервера, а none - дозволяє різні url
       path: '/api/v1/auth/refresh', //Кука надсилатиметься ТІЛЬКИ на роут /auth/refresh
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 днів у мс
     });
